@@ -1,4 +1,4 @@
-Dragon Knight Updated
+# Dragon Knight Updated
 This fork has been updated to be php 5 friendly with mysqli and a few layers of extra security.  The changes are intented to make the engine useable for modern web hosts.  Security updates are only minimal, add your own, or use at your own risk.  All changes are in the changelog.txt document
 
 # Dragon Knight
