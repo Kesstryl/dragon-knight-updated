@@ -16,11 +16,12 @@ if (isset($_GET["page"])) {
 
 // Thanks to Predrag Supurovic from php.net for this function!
 function dobatch ($p_query) {
+	$link = opendb();
   $query_split = preg_split ("/[;]+/", $p_query);
   foreach ($query_split as $command_line) {
    $command_line = trim($command_line);
    if ($command_line != '') {
-     $query_result = mysql_query($command_line);
+     $query_result = mysqli_query($link, $command_line);
      if ($query_result == 0) {
        break;
      };
@@ -58,8 +59,10 @@ die();
 }
 
 function second() { // Second page - set up the database tables.
-    
+
+    include('config.php');
     global $dbsettings;
+	$link = opendb();
     echo "<html><head><title>Dragon Knight Installation</title></head><body><b>Dragon Knight Installation: Page Two</b><br /><br />";
     $prefix = $dbsettings["prefix"];
     $babble = $prefix . "_babble";
@@ -77,19 +80,19 @@ function second() { // Second page - set up the database tables.
     if (isset($_POST["complete"])) { $full = true; } else { $full = false; }
     
 $query = <<<END
-CREATE TABLE `$babble` (
+CREATE TABLE IF NOT EXISTS `$babble` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `posttime` time NOT NULL default '00:00:00',
   `author` varchar(30) NOT NULL default '',
   `babble` varchar(120) NOT NULL default '',
   PRIMARY KEY  (`id`)
-) TYPE=MyISAM;
+) ENGINE=InnoDB;
 END;
 if (dobatch($query) == 1) { echo "Babble Box table created.<br />"; } else { echo "Error creating Babble Box table."; }
 unset($query);
 
 $query = <<<END
-CREATE TABLE `$control` (
+CREATE TABLE IF NOT EXISTS `$control` (
   `id` tinyint(3) unsigned NOT NULL auto_increment,
   `gamename` varchar(50) NOT NULL default '',
   `gamesize` smallint(5) unsigned NOT NULL default '0',
@@ -113,7 +116,7 @@ CREATE TABLE `$control` (
   `showbabble` tinyint(3) unsigned NOT NULL default '0',
   `showonline` tinyint(3) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`)
-) TYPE=MyISAM;
+) ENGINE=InnoDB;
 
 END;
 if (dobatch($query) == 1) { echo "Control table created.<br />"; } else { echo "Error creating Control table."; }
@@ -126,7 +129,7 @@ if (dobatch($query) == 1) { echo "Control table populated.<br />"; } else { echo
 unset($query);
 
 $query = <<<END
-CREATE TABLE `$drops` (
+CREATE TABLE IF NOT EXISTS `$drops` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
   `name` varchar(30) NOT NULL default '',
   `mlevel` smallint(5) unsigned NOT NULL default '0',
@@ -134,7 +137,7 @@ CREATE TABLE `$drops` (
   `attribute1` varchar(30) NOT NULL default '',
   `attribute2` varchar(30) NOT NULL default '',
   PRIMARY KEY  (`id`)
-) TYPE=MyISAM;
+) ENGINE=InnoDB;
 END;
 if (dobatch($query) == 1) { echo "Drops table created.<br />"; } else { echo "Error creating Drops table."; }
 unset($query);
@@ -179,7 +182,7 @@ unset($query);
 }
 
 $query = <<<END
-CREATE TABLE `$forum` (
+CREATE TABLE IF NOT EXISTS `$forum` (
   `id` int(11) NOT NULL auto_increment,
   `postdate` datetime NOT NULL default '0000-00-00 00:00:00',
   `newpostdate` datetime NOT NULL default '0000-00-00 00:00:00',
@@ -189,13 +192,13 @@ CREATE TABLE `$forum` (
   `title` varchar(100) NOT NULL default '',
   `content` text NOT NULL,
   PRIMARY KEY  (`id`)
-) TYPE=MyISAM;
+) ENGINE=InnoDB;
 END;
 if (dobatch($query) == 1) { echo "Forum table created.<br />"; } else { echo "Error creating Forum table."; }
 unset($query);
 
 $query = <<<END
-CREATE TABLE `$items` (
+CREATE TABLE IF NOT EXISTS `$items` (
   `id` smallint(5) unsigned NOT NULL auto_increment,
   `type` tinyint(3) unsigned NOT NULL default '0',
   `name` varchar(30) NOT NULL default '',
@@ -203,7 +206,7 @@ CREATE TABLE `$items` (
   `attribute` smallint(5) unsigned NOT NULL default '0',
   `special` varchar(50) NOT NULL default '',
   PRIMARY KEY  (`id`)
-) TYPE=MyISAM;
+) ENGINE=InnoDB;
 END;
 if (dobatch($query) == 1) { echo "Items table created.<br />"; } else { echo "Error creating Items table."; }
 unset($query);
@@ -249,7 +252,7 @@ unset($query);
 }
 
 $query = <<<END
-CREATE TABLE `$levels` (
+CREATE TABLE IF NOT EXISTS `$levels` (
   `id` smallint(5) unsigned NOT NULL auto_increment,
   `1_exp` mediumint(8) unsigned NOT NULL default '0',
   `1_hp` smallint(5) unsigned NOT NULL default '0',
@@ -273,7 +276,7 @@ CREATE TABLE `$levels` (
   `3_dexterity` smallint(5) unsigned NOT NULL default '0',
   `3_spells` tinyint(3) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`)
-) TYPE=MyISAM;
+) ENGINE=InnoDB;
 END;
 if (dobatch($query) == 1) { echo "Levels table created.<br />"; } else { echo "Error creating Levels table."; }
 unset($query);
@@ -386,7 +389,7 @@ unset($query);
 }
 
 $query = <<<END
-CREATE TABLE `$monsters` (
+CREATE TABLE IF NOT EXISTS `$monsters` (
   `id` smallint(5) unsigned NOT NULL auto_increment,
   `name` varchar(50) NOT NULL default '',
   `maxhp` smallint(5) unsigned NOT NULL default '0',
@@ -397,7 +400,7 @@ CREATE TABLE `$monsters` (
   `maxgold` smallint(5) unsigned NOT NULL default '0',
   `immune` tinyint(3) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`)
-) TYPE=MyISAM;
+) ENGINE=InnoDB;
 END;
 if (dobatch($query) == 1) { echo "Monsters table created.<br />"; } else { echo "Error creating Monsters table."; }
 unset($query);
@@ -561,12 +564,12 @@ unset($query);
 }
 
 $query = <<<END
-CREATE TABLE `$news` (
+CREATE TABLE IF NOT EXISTS `$news` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
   `postdate` datetime NOT NULL default '0000-00-00 00:00:00',
   `content` text NOT NULL,
   PRIMARY KEY  (`id`)
-) TYPE=MyISAM;
+) ENGINE=InnoDB;
 END;
 if (dobatch($query) == 1) { echo "News table created.<br />"; } else { echo "Error creating News table."; }
 unset($query);
@@ -578,14 +581,14 @@ if (dobatch($query) == 1) { echo "News table populated.<br />"; } else { echo "E
 unset($query);
 
 $query = <<<END
-CREATE TABLE `$spells` (
+CREATE TABLE IF NOT EXISTS `$spells` (
   `id` smallint(5) unsigned NOT NULL auto_increment,
   `name` varchar(30) NOT NULL default '',
   `mp` smallint(5) unsigned NOT NULL default '0',
   `attribute` smallint(5) unsigned NOT NULL default '0',
   `type` smallint(5) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`)
-) TYPE=MyISAM;
+) ENGINE=InnoDB;
 END;
 if (dobatch($query) == 1) { echo "Spells table created.<br />"; } else { echo "Error creating Spells table."; }
 unset($query);
@@ -617,7 +620,7 @@ unset($query);
 }
 
 $query = <<<END
-CREATE TABLE `$towns` (
+CREATE TABLE IF NOT EXISTS `$towns` (
   `id` tinyint(3) unsigned NOT NULL auto_increment,
   `name` varchar(30) NOT NULL default '',
   `latitude` smallint(6) NOT NULL default '0',
@@ -627,7 +630,7 @@ CREATE TABLE `$towns` (
   `travelpoints` smallint(5) unsigned NOT NULL default '0',
   `itemslist` text NOT NULL,
   PRIMARY KEY  (`id`)
-) TYPE=MyISAM;
+) ENGINE=InnoDB;
 END;
 if (dobatch($query) == 1) { echo "Towns table created.<br />"; } else { echo "Error creating Towns table."; }
 unset($query);
@@ -648,10 +651,10 @@ unset($query);
 }
 
 $query = <<<END
-CREATE TABLE `$users` (
+CREATE TABLE IF NOT EXISTS `$users` (
   `id` smallint(5) unsigned NOT NULL auto_increment,
   `username` varchar(30) NOT NULL default '',
-  `password` varchar(32) NOT NULL default '',
+  `password` varchar(64) NOT NULL default '',
   `email` varchar(100) NOT NULL default '',
   `verify` varchar(8) NOT NULL default '0',
   `charname` varchar(30) NOT NULL default '',
@@ -701,7 +704,7 @@ CREATE TABLE `$users` (
   `spells` varchar(50) NOT NULL default '0',
   `towns` varchar(50) NOT NULL default '0',
   PRIMARY KEY  (`id`)
-) TYPE=MyISAM;
+) ENGINE=InnoDB;
 END;
 if (dobatch($query) == 1) { echo "Users table created.<br />"; } else { echo "Error creating Users table."; }
 unset($query);
@@ -755,11 +758,13 @@ function fourth() { // Final page: insert new user row, congratulate the person 
     if (!isset($email2)) { die("Verify Email is required."); }
     if ($email1 != $email2) { die("Emails don't match."); }
     if (!isset($charname)) { die("Character Name is required."); }
-    $password = md5($password1);
+    $salt = $username;
+	$password = hash('sha256', $salt.$password1);
     
     global $dbsettings;
+	$link = opendb();
     $users = $dbsettings["prefix"] . "_users";
-    $query = mysql_query("INSERT INTO $users SET id='1',username='$username',password='$password',email='$email1',verify='1',charname='$charname',charclass='$charclass',regdate=NOW(),onlinetime=NOW(),authlevel='1'") or die(mysql_error());
+    $query = mysqli_query($link, "INSERT INTO $users SET id='1',username='$username',password='$password',email='$email1',verify='1',charname='$charname',charclass='$charclass',regdate=NOW(),onlinetime=NOW(),authlevel='1'") or die(mysql_error());
 
 $page = <<<END
 <html>

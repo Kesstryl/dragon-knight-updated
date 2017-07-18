@@ -8,6 +8,7 @@ $template = <<<THEVERYENDOFYOU
 <li /><a href="index.php?do=inn">Rest at the Inn</a>
 <li /><a href="index.php?do=buy">Buy Weapons/Armor</a>
 <li /><a href="index.php?do=maps">Buy Maps</a>
+<li /><a href="index.php?do=topten">Top 10 Users</a>
 </ul>
 </td></tr>
 <tr><td><center>

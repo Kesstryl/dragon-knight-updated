@@ -1,17 +1,23 @@
 <?
 
+//This script has already been integrated into install.php
+//This script is here because it came with the original dk engine and is not needed.  
+//For security, delete from directory on any production servers for security reasons.
+
 include('config.php');
 include('lib.php');
+$check = protectcsfr();
 $link = opendb();
 $prefix = $dbsettings["prefix"];
 
 // Thanks to Predrag Supurovic from php.net for this function!
 function dobatch ($p_query) {
+	$link = opendb();
   $query_split = preg_split ("/[;]+/", $p_query);
   foreach ($query_split as $command_line) {
    $command_line = trim($command_line);
    if ($command_line != '') {
-     $query_result = mysql_query($command_line);
+     $query_result = mysqli_query($link, $command_line);
      if ($query_result == 0) {
        break;
      };
@@ -61,9 +67,9 @@ END;
 if (dobatch($query) == 1) { echo "Control table populated.<br />"; } else { echo "Error populating Control table."; }
 unset($query);
 
-$query = mysql_query("SELECT * FROM $users ORDER BY id") or die(mysql_error());
+$query = mysqli_query($link, "SELECT * FROM $users ORDER BY id") or die(mysql_error());
 $errors = 0; $errorlist = "";
-while ($row = mysql_fetch_array($query)) {
+while ($row = mysqli_fetch_array($query)) {
     $id = $row["id"];
     $oldspells = explode(",",$row["spells"]);
     $newspells = "0,";
@@ -77,7 +83,7 @@ while ($row = mysql_fetch_array($query)) {
         if ($d == 1) { $newtowns .= "$c,"; }
     }
     $newtowns = rtrim($newtowns,",");
-    $update = mysql_query("UPDATE $users SET spells='$newspells',towns='$newtowns',verify='1' WHERE id='$id' LIMIT 1");
+    $update = mysqli_query($link, "UPDATE $users SET spells='$newspells',towns='$newtowns',verify='1' WHERE id='$id' LIMIT 1");
     if ($update == false) { $errors++; $errorlist .= mysql_error() . "<br />"; } else { echo "User $id upgraded.<br />"; }
 }
 if ($errors != 0) {

@@ -3,14 +3,16 @@
 function fight() { // One big long function that determines the outcome of the fight.
     
     global $userrow, $controlrow;
+	$check = protectcsfr();
+	$link = opendb();
     if ($userrow["currentaction"] != "Fighting") { display("Cheat attempt detected.<br /><br />Get a life, loser.", "Error"); }
     $pagearray = array();
     $playerisdead = 0;
     
     $pagearray["magiclist"] = "";
     $userspells = explode(",",$userrow["spells"]);
-    $spellquery = doquery("SELECT id,name FROM {{table}}", "spells");
-    while ($spellrow = mysql_fetch_array($spellquery)) {
+    $spellquery = doquery($link, "SELECT id,name FROM {{table}}", "spells");
+    while ($spellrow = mysqli_fetch_array($spellquery)) {
         $spell = false;
         foreach ($userspells as $a => $b) {
             if ($b == $spellrow["id"]) { $spell = true; }
@@ -37,8 +39,8 @@ function fight() { // One big long function that determines the outcome of the f
         
         
         // Pick a monster.
-        $monsterquery = doquery("SELECT * FROM {{table}} WHERE level>='$minlevel' AND level<='$maxlevel' ORDER BY RAND() LIMIT 1", "monsters");
-        $monsterrow = mysql_fetch_array($monsterquery);
+        $monsterquery = doquery($link, "SELECT * FROM {{table}} WHERE level>='$minlevel' AND level<='$maxlevel' ORDER BY RAND() LIMIT 1", "monsters");
+        $monsterrow = mysqli_fetch_array($monsterquery);
         $userrow["currentmonster"] = $monsterrow["id"];
         $userrow["currentmonsterhp"] = rand((($monsterrow["maxhp"]/5)*4),$monsterrow["maxhp"]);
         if ($userrow["difficulty"] == 2) { $userrow["currentmonsterhp"] = ceil($userrow["currentmonsterhp"] * $controlrow["diff2mod"]); }
@@ -55,8 +57,8 @@ function fight() { // One big long function that determines the outcome of the f
     }
     
     // Next, get the monster statistics.
-    $monsterquery = doquery("SELECT * FROM {{table}} WHERE id='".$userrow["currentmonster"]."' LIMIT 1", "monsters");
-    $monsterrow = mysql_fetch_array($monsterquery);
+    $monsterquery = doquery($link, "SELECT * FROM {{table}} WHERE id='".$userrow["currentmonster"]."' LIMIT 1", "monsters");
+    $monsterrow = mysqli_fetch_array($monsterquery);
     $pagearray["monstername"] = $monsterrow["name"];
     
     // Do run stuff.
@@ -100,13 +102,13 @@ function fight() { // One big long function that determines the outcome of the f
                 if ($userrow["currenthp"] <= 0) {
                     $newgold = ceil($userrow["gold"]/2);
                     $newhp = ceil($userrow["maxhp"]/4);
-                    $updatequery = doquery("UPDATE {{table}} SET currenthp='$newhp',currentaction='In Town',currentmonster='0',currentmonsterhp='0',currentmonstersleep='0',currentmonsterimmune='0',currentfight='0',latitude='0',longitude='0',gold='$newgold' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+                    $updatequery = doquery($link,"UPDATE {{table}} SET currenthp='$newhp',currentaction='In Town',currentmonster='0',currentmonsterhp='0',currentmonstersleep='0',currentmonsterimmune='0',currentfight='0',latitude='0',longitude='0',gold='$newgold' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
                     $playerisdead = 1;
                 }
             }
         }
 
-        $updatequery = doquery("UPDATE {{table}} SET currentaction='Exploring' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+        $updatequery = doquery($link, "UPDATE {{table}} SET currentaction='Exploring' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
         header("Location: index.php");
         die();
         
@@ -134,7 +136,7 @@ function fight() { // One big long function that determines the outcome of the f
         $userrow["currentmonsterhp"] -= $monsterdamage;
         $pagearray["monsterhp"] = "Monster's HP: " . $userrow["currentmonsterhp"] . "<br /><br />";
         if ($userrow["currentmonsterhp"] <= 0) {
-            $updatequery = doquery("UPDATE {{table}} SET currentmonsterhp='0' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+            $updatequery = doquery($link, "UPDATE {{table}} SET currentmonsterhp='0' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
             header("Location: index.php?do=victory");
             die();
         }
@@ -172,7 +174,7 @@ function fight() { // One big long function that determines the outcome of the f
             if ($userrow["currenthp"] <= 0) {
                 $newgold = ceil($userrow["gold"]/2);
                 $newhp = ceil($userrow["maxhp"]/4);
-                $updatequery = doquery("UPDATE {{table}} SET currenthp='$newhp',currentaction='In Town',currentmonster='0',currentmonsterhp='0',currentmonstersleep='0',currentmonsterimmune='0',currentfight='0',latitude='0',longitude='0',gold='$newgold' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+                $updatequery = doquery($link, "UPDATE {{table}} SET currenthp='$newhp',currentaction='In Town',currentmonster='0',currentmonsterhp='0',currentmonstersleep='0',currentmonsterimmune='0',currentfight='0',latitude='0',longitude='0',gold='$newgold' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
                 $playerisdead = 1;
             }
         }
@@ -184,8 +186,8 @@ function fight() { // One big long function that determines the outcome of the f
         $pickedspell = $_POST["userspell"];
         if ($pickedspell == 0) { display("You must select a spell first. Please go back and try again.", "Error"); die(); }
         
-        $newspellquery = doquery("SELECT * FROM {{table}} WHERE id='$pickedspell' LIMIT 1", "spells");
-        $newspellrow = mysql_fetch_array($newspellquery);
+        $newspellquery = doquery($link, "SELECT * FROM {{table}} WHERE id='$pickedspell' LIMIT 1", "spells");
+        $newspellrow = mysqli_fetch_array($newspellquery);
         $spell = false;
         foreach($userspells as $a => $b) {
             if ($b == $pickedspell) { $spell = true; }
@@ -228,7 +230,7 @@ function fight() { // One big long function that determines the outcome of the f
             
         $pagearray["monsterhp"] = "Monster's HP: " . $userrow["currentmonsterhp"] . "<br /><br />";
         if ($userrow["currentmonsterhp"] <= 0) {
-            $updatequery = doquery("UPDATE {{table}} SET currentmonsterhp='0',currenthp='".$userrow["currenthp"]."',currentmp='".$userrow["currentmp"]."' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+            $updatequery = doquery($link, "UPDATE {{table}} SET currentmonsterhp='0',currenthp='".$userrow["currenthp"]."',currentmp='".$userrow["currentmp"]."' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
             header("Location: index.php?do=victory");
             die();
         }
@@ -266,7 +268,7 @@ function fight() { // One big long function that determines the outcome of the f
             if ($userrow["currenthp"] <= 0) {
                 $newgold = ceil($userrow["gold"]/2);
                 $newhp = ceil($userrow["maxhp"]/4);
-                $updatequery = doquery("UPDATE {{table}} SET currenthp='$newhp',currentaction='In Town',currentmonster='0',currentmonsterhp='0',currentmonstersleep='0',currentmonsterimmune='0',currentfight='0',latitude='0',longitude='0',gold='$newgold' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+                $updatequery = doquery($link, "UPDATE {{table}} SET currenthp='$newhp',currentaction='In Town',currentmonster='0',currentmonsterhp='0',currentmonstersleep='0',currentmonsterimmune='0',currentfight='0',latitude='0',longitude='0',gold='$newgold' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
                 $playerisdead = 1;
             }
         }
@@ -307,7 +309,7 @@ function fight() { // One big long function that determines the outcome of the f
             if ($userrow["currenthp"] <= 0) {
                 $newgold = ceil($userrow["gold"]/2);
                 $newhp = ceil($userrow["maxhp"]/4);
-                $updatequery = doquery("UPDATE {{table}} SET currenthp='$newhp',currentaction='In Town',currentmonster='0',currentmonsterhp='0',currentmonstersleep='0',currentmonsterimmune='0',currentfight='0',latitude='0',longitude='0',gold='$newgold' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+                $updatequery = doquery($link, "UPDATE {{table}} SET currenthp='$newhp',currentaction='In Town',currentmonster='0',currentmonsterhp='0',currentmonstersleep='0',currentmonsterimmune='0',currentfight='0',latitude='0',longitude='0',gold='$newgold' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
                 $playerisdead = 1;
             }
         }
@@ -338,7 +340,7 @@ Command?<br /><br />
 <input type="submit" name="run" value="Run" /><br /><br />
 </form>
 END;
-    $updatequery = doquery("UPDATE {{table}} SET currentaction='Fighting',currenthp='$newhp',currentmp='$newmp',currentfight='$newfight',currentmonster='$newmonster',currentmonsterhp='$newmonsterhp',currentmonstersleep='$newmonstersleep',currentmonsterimmune='$newmonsterimmune',currentuberdamage='$newuberdamage',currentuberdefense='$newuberdefense' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+    $updatequery = doquery($link, "UPDATE {{table}} SET currentaction='Fighting',currenthp='$newhp',currentmp='$newmp',currentfight='$newfight',currentmonster='$newmonster',currentmonsterhp='$newmonsterhp',currentmonstersleep='$newmonstersleep',currentmonsterimmune='$newmonsterimmune',currentuberdamage='$newuberdamage',currentuberdefense='$newuberdefense' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
 } else {
     $pagearray["command"] = "<b>You have died.</b><br /><br />As a consequence, you've lost half of your gold. However, you have been given back a portion of your hit points to continue your journey.<br /><br />You may now continue back to <a href=\"index.php\">town</a>, and we hope you fair better next time.";
 }
@@ -354,12 +356,13 @@ END;
 function victory() {
     
     global $userrow, $controlrow;
-    
+	$check = protectcsfr();
+    $link = opendb();
     if ($userrow["currentmonsterhp"] != 0) { header("Location: index.php?do=fight"); die(); }
     if ($userrow["currentfight"] == 0) { header("Location: index.php"); die(); }
     
-    $monsterquery = doquery("SELECT * FROM {{table}} WHERE id='".$userrow["currentmonster"]."' LIMIT 1", "monsters");
-    $monsterrow = mysql_fetch_array($monsterquery);
+    $monsterquery = doquery($link, "SELECT * FROM {{table}} WHERE id='".$userrow["currentmonster"]."' LIMIT 1", "monsters");
+    $monsterrow = mysqli_fetch_array($monsterquery);
     
     $exp = rand((($monsterrow["maxexp"]/6)*5),$monsterrow["maxexp"]);
     if ($exp < 1) { $exp = 1; }
@@ -374,8 +377,8 @@ function victory() {
     if ($userrow["experience"] + $exp < 16777215) { $newexp = $userrow["experience"] + $exp; $warnexp = ""; } else { $newexp = $userrow["experience"]; $exp = 0; $warnexp = "You have maxed out your experience points."; }
     if ($userrow["gold"] + $gold < 16777215) { $newgold = $userrow["gold"] + $gold; $warngold = ""; } else { $newgold = $userrow["gold"]; $gold = 0; $warngold = "You have maxed out your experience points."; }
     
-    $levelquery = doquery("SELECT * FROM {{table}} WHERE id='".($userrow["level"]+1)."' LIMIT 1", "levels");
-    if (mysql_num_rows($levelquery) == 1) { $levelrow = mysql_fetch_array($levelquery); }
+    $levelquery = doquery($link, "SELECT * FROM {{table}} WHERE id='".($userrow["level"]+1)."' LIMIT 1", "levels");
+    if (mysqli_num_rows($levelquery) == 1) { $levelrow = mysqli_fetch_array($levelquery); }
     
     if ($userrow["level"] < 100) {
         if ($newexp >= $levelrow[$userrow["charclass"]."_exp"]) {
@@ -410,8 +413,8 @@ function victory() {
             $page = "Congratulations. You have defeated the ".$monsterrow["name"].".<br />You gain $exp experience. $warnexp <br />You gain $gold gold. $warngold <br /><br />";
             
             if (rand(1,30) == 1) {
-                $dropquery = doquery("SELECT * FROM {{table}} WHERE mlevel <= '".$monsterrow["level"]."' ORDER BY RAND() LIMIT 1", "drops");
-                $droprow = mysql_fetch_array($dropquery);
+                $dropquery = doquery($link, "SELECT * FROM {{table}} WHERE mlevel <= '".$monsterrow["level"]."' ORDER BY RAND() LIMIT 1", "drops");
+                $droprow = mysqli_fetch_array($dropquery);
                 $dropcode = "dropcode='".$droprow["id"]."',";
                 $page .= "This monster has dropped an item. <a href=\"index.php?do=drop\">Click here</a> to reveal and equip the item, or you may also move on and continue <a href=\"index.php\">exploring</a>.";
             } else { 
@@ -423,7 +426,7 @@ function victory() {
         }
     }
 
-    $updatequery = doquery("UPDATE {{table}} SET currentaction='Exploring',level='$newlevel',maxhp='$newhp',maxmp='$newmp',maxtp='$newtp',strength='$newstrength',dexterity='$newdexterity',attackpower='$newattack',defensepower='$newdefense', $newspell currentfight='0',currentmonster='0',currentmonsterhp='0',currentmonstersleep='0',currentmonsterimmune='0',currentuberdamage='0',currentuberdefense='0',$dropcode experience='$newexp',gold='$newgold' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+    $updatequery = doquery($link, "UPDATE {{table}} SET currentaction='Exploring',level='$newlevel',maxhp='$newhp',maxmp='$newmp',maxtp='$newtp',strength='$newstrength',dexterity='$newdexterity',attackpower='$newattack',defensepower='$newdefense', $newspell currentfight='0',currentmonster='0',currentmonsterhp='0',currentmonstersleep='0',currentmonsterimmune='0',currentuberdamage='0',currentuberdefense='0',$dropcode experience='$newexp',gold='$newgold' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
     
 
     display($page, $title);
@@ -433,11 +436,12 @@ function victory() {
 function drop() {
     
     global $userrow;
-    
+	$check = protectcsfr();
+    $link = opendb();
     if ($userrow["dropcode"] == 0) { header("Location: index.php"); die(); }
     
-    $dropquery = doquery("SELECT * FROM {{table}} WHERE id='".$userrow["dropcode"]."' LIMIT 1", "drops");
-    $droprow = mysql_fetch_array($dropquery);
+    $dropquery = doquery($link, "SELECT * FROM {{table}} WHERE id='".$userrow["dropcode"]."' LIMIT 1", "drops");
+    $droprow = mysqli_fetch_array($dropquery);
     
     if (isset($_POST["submit"])) {
         
@@ -447,8 +451,8 @@ function drop() {
         
         if ($userrow["slot".$slot."id"] != 0) {
             
-            $slotquery = doquery("SELECT * FROM {{table}} WHERE id='".$userrow["slot".$slot."id"]."' LIMIT 1", "drops");
-            $slotrow = mysql_fetch_array($slotquery);
+            $slotquery = doquery($link, "SELECT * FROM {{table}} WHERE id='".$userrow["slot".$slot."id"]."' LIMIT 1", "drops");
+            $slotrow = mysqli_fetch_array($slotquery);
             
             $old1 = explode(",",$slotrow["attribute1"]);
             if ($slotrow["attribute2"] != "X") { $old2 = explode(",",$slotrow["attribute2"]); } else { $old2 = array(0=>"maxhp",1=>0); }
@@ -474,7 +478,7 @@ function drop() {
             if ($userrow["currenttp"] > $userrow["maxtp"]) { $userrow["currenttp"] = $userrow["maxtp"]; }
             
             $newname = addslashes($droprow["name"]);
-            $query = doquery("UPDATE {{table}} SET slot".$_POST["slot"]."name='$newname',slot".$_POST["slot"]."id='".$droprow["id"]."',$old1[0]='".$userrow[$old1[0]]."',$old2[0]='".$userrow[$old2[0]]."',$new1[0]='".$userrow[$new1[0]]."',$new2[0]='".$userrow[$new2[0]]."',attackpower='".$userrow["attackpower"]."',defensepower='".$userrow["defensepower"]."',currenthp='".$userrow["currenthp"]."',currentmp='".$userrow["currentmp"]."',currenttp='".$userrow["currenttp"]."',dropcode='0' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+            $query = doquery($link, "UPDATE {{table}} SET slot".$_POST["slot"]."name='$newname',slot".$_POST["slot"]."id='".$droprow["id"]."',$old1[0]='".$userrow[$old1[0]]."',$old2[0]='".$userrow[$old2[0]]."',$new1[0]='".$userrow[$new1[0]]."',$new2[0]='".$userrow[$new2[0]]."',attackpower='".$userrow["attackpower"]."',defensepower='".$userrow["defensepower"]."',currenthp='".$userrow["currenthp"]."',currentmp='".$userrow["currentmp"]."',currenttp='".$userrow["currenttp"]."',dropcode='0' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
             
         } else {
             
@@ -489,7 +493,7 @@ function drop() {
             if ($new2[0] == "dexterity") { $userrow["defensepower"] += $new2[1]; }
             
             $newname = addslashes($droprow["name"]);
-            $query = doquery("UPDATE {{table}} SET slot".$_POST["slot"]."name='$newname',slot".$_POST["slot"]."id='".$droprow["id"]."',$new1[0]='".$userrow[$new1[0]]."',$new2[0]='".$userrow[$new2[0]]."',attackpower='".$userrow["attackpower"]."',defensepower='".$userrow["defensepower"]."',dropcode='0' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+            $query = doquery($link, "UPDATE {{table}} SET slot".$_POST["slot"]."name='$newname',slot".$_POST["slot"]."id='".$droprow["id"]."',$new1[0]='".$userrow[$new1[0]]."',$new2[0]='".$userrow[$new2[0]]."',attackpower='".$userrow["attackpower"]."',defensepower='".$userrow["defensepower"]."',dropcode='0' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
             
         }
         $page = "The item has been equipped. You can now continue <a href=\"index.php\">exploring</a>.";
@@ -531,6 +535,7 @@ function drop() {
 
 function dead() {
     
+	$check = protectcsfr();
     $page = "<b>You have died.</b><br /><br />As a consequence, you've lost half of your gold. However, you have been given back a portion of your hit points to continue your journey.<br /><br />You may now continue back to <a href=\"index.php\">town</a>, and we hope you fair better next time.";
         
 }

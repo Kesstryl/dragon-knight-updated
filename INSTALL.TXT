@@ -1,0 +1,19 @@
+Dragon Knight
+Installation Instructions
+
+### SYSTEM REQUIREMENTS ###
+- PHP (5 and higher)
+- MySQL
+- zlib compression enabled on your server (optional)
+
+### INSTALLATION INSTRUCTIONS ###
+1. Create a new database for Dragon Knight to use, if you don't already have one set up.
+2. Edit 'config.php' to include the correct values for your database setup.
+3. Upload the contents of the Dragon Knight folder to your site.
+4. In your browser, run 'install.php' and follow the instructions.
+5. After completing installation, delete 'install.php' from your Dragon Knight directory for security.
+6. Enjoy the game.
+
+These two scripts in the directory are optional and must be deleted from any public site along with the install script.
+upgrade_to_110.php
+upgrade_to_112.php

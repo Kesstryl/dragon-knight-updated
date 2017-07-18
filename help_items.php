@@ -1,8 +1,9 @@
 <?php 
-include('lib.php'); 
+include('lib.php');
+$check = protectcsfr();
 $link = opendb();
-$controlquery = doquery("SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
-$controlrow = mysql_fetch_array($controlquery);
+$controlquery = doquery($link, "SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
+$controlrow = mysqli_fetch_array($controlquery);
 ob_start("ob_gzhandler");
 ?>
 
@@ -80,8 +81,8 @@ a:hover {
 <tr><td><b>Type</b></td><td><b>Name</b></td><td><b>Cost</b></td><td><b>Attribute</b></td><td><b>Special</b></td></tr>
 <?
 $count = 1;
-$itemsquery = doquery("SELECT * FROM {{table}} ORDER BY id", "items");
-while ($itemsrow = mysql_fetch_array($itemsquery)) {
+$itemsquery = doquery($link,"SELECT * FROM {{table}} ORDER BY id", "items");
+while ($itemsrow = mysqli_fetch_array($itemsquery)) {
     if ($count == 1) { $color = "bgcolor=\"#ffffff\""; $count = 2; } else { $color = ""; $count = 1; }
     if ($itemsrow["type"] == 1) { $image = "weapon"; $power = "Attack"; } elseif ($itemsrow["type"] == 2) { $image = "armor"; $power = "Defense"; } else { $image = "shield"; $power = "Defense"; }
     if ($itemsrow["special"] != "X") {
@@ -110,8 +111,8 @@ while ($itemsrow = mysql_fetch_array($itemsquery)) {
 <tr><td><b>Name</b></td><td><b>Monster Level</b></td><td><b>Attribute 1</b></td><td><b>Attribute 2</b></td></tr>
 <?
 $count = 1;
-$itemsquery = doquery("SELECT * FROM {{table}} ORDER BY id", "drops");
-while ($itemsrow = mysql_fetch_array($itemsquery)) {
+$itemsquery = doquery($link,"SELECT * FROM {{table}} ORDER BY id", "drops");
+while ($itemsrow = mysqli_fetch_array($itemsquery)) {
     if ($count == 1) { $color = "bgcolor=\"#ffffff\""; $count = 2; } else { $color = ""; $count = 1; }
     if ($itemsrow["attribute1"] != "X") {
         $special1 = explode(",",$itemsrow["attribute1"]);

@@ -3,10 +3,10 @@
 function healspells($id) {
     
     global $userrow;
-    
+    $check = protectcsfr();
     $userspells = explode(",",$userrow["spells"]);
-    $spellquery = doquery("SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "spells");
-    $spellrow = mysql_fetch_array($spellquery);
+    $spellquery = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "spells");
+    $spellrow = mysqli_fetch_array($spellquery);
     
     // All the various ways to error out.
     $spell = false;
@@ -23,7 +23,7 @@ function healspells($id) {
     if ($userrow["maxhp"] < $newhp) { $spellrow["attribute"] = $userrow["maxhp"] - $userrow["currenthp"]; $newhp = $userrow["currenthp"] + $spellrow["attribute"]; }
     $newmp = $userrow["currentmp"] - $spellrow["mp"];
     
-    $updatequery = doquery("UPDATE {{table}} SET currenthp='$newhp', currentmp='$newmp' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+    $updatequery = doquery($link, "UPDATE {{table}} SET currenthp='$newhp', currentmp='$newmp' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
     
     display("You have cast the ".$spellrow["name"]." spell, and gained ".$spellrow["attribute"]." Hit Points. You can now continue <a href=\"index.php\">exploring</a>.", "Healing Spell");
     die();

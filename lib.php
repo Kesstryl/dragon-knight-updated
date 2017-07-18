@@ -2,7 +2,7 @@
 
 $starttime = getmicrotime();
 $numqueries = 0;
-$version = "1.1.11";
+$version = "1.1.12";
 $build = "";
 
 // Handling for servers with magic_quotes turned on.
@@ -43,29 +43,64 @@ function html_deep($value) {
     
    $value = is_array($value) ?
                array_map('html_deep', $value) :
-               htmlspecialchars($value);
+               htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
    return $value;
    
 }
 
+
 function opendb() { // Open database connection.
 
     include('config.php');
-    extract($dbsettings);
-    $link = mysql_connect($server, $user, $pass) or die(mysql_error());
-    mysql_select_db($name) or die(mysql_error());
+    extract($dbsettings, EXTR_SKIP);
+    $link = mysqli_connect($server, $user, $pass, $name) or die("configuration error");
     return $link;
 
 }
 
-function doquery($query, $table) { // Something of a tiny little database abstraction layer.
+function doquery($link, $query, $table) { // Something of a tiny little database abstraction layer.
     
     include('config.php');
     global $numqueries;
-    $sqlquery = mysql_query(str_replace("{{table}}", $dbsettings["prefix"] . "_" . $table, $query)) or die(mysql_error());
-    $numqueries++;
+	$link = opendb();
+    $sqlquery = mysqli_query($link, str_replace("{{table}}", $dbsettings["prefix"] . "_" . $table, $query)) or die("error accessing the database.");
+	$numqueries++;
     return $sqlquery;
 
+}
+
+function protect($string) {
+	$link = opendb();
+	$string = strip_tags($string);
+	$string = trim($string);
+	$string = htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
+	$string = htmlentities($string);
+    return mysqli_real_escape_string($link, $string);
+}
+
+function protectarray($array){
+	$link = opendb();
+	$array = strip_tags($array);
+	$array = trim($array);
+	$array = htmlspecialchars($array, ENT_QUOTES, 'UTF-8');
+	$array = htmlentities($array);
+	return mysqli_real_escape_string($link, $array);
+}
+
+function protectcsfr() {
+	include('config.php');
+		extract($dbsettings, EXTR_SKIP);
+		$safe = $safeserver;
+		$host = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
+		if ($safe != $host && isset($_SERVER['HTTP_REFERER'])) die("invalid url");
+}
+
+function admintoken() {
+	$link = opendb();
+	$check = doquery($link, "SELECT random FROM {{table}} WHERE authlevel = 1 LIMIT 1","users");
+	$row = mysqli_fetch_array($check);
+	$checktoken = md5($row['random']);
+	return $checktoken;
 }
 
 function gettemplate($templatename) { // SQL query for the template.
@@ -126,17 +161,18 @@ function admindisplay($content, $title) { // Finalize page and output to browser
     
     global $numqueries, $userrow, $controlrow, $starttime, $version, $build;
     if (!isset($controlrow)) {
-        $controlquery = doquery("SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
-        $controlrow = mysql_fetch_array($controlquery);
+        $controlquery = doquery($link, "SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
+        $controlrow = mysqli_fetch_array($controlquery);
     }
-    
+    $check = protectcsfr();
     $template = gettemplate("admin");
     
     // Make page tags for XHTML validation.
-    $xml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
+    $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     . "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"DTD/xhtml1-transitional.dtd\">\n"
     . "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
-
+	$xml = libxml_disable_entity_loader( true );
+	
     $finalarray = array(
         "title"=>$title,
         "content"=>$content,
@@ -147,7 +183,8 @@ function admindisplay($content, $title) { // Finalize page and output to browser
     $page = parsetemplate($template, $finalarray);
     $page = $xml . $page;
 
-    if ($controlrow["compression"] == 1) { ob_start("ob_gzhandler"); }
+    if ($controlrow["compression"] == 1) 
+//	{ ob_start("ob_gzhandler"); }
     echo $page;
     die();
     
@@ -156,16 +193,20 @@ function admindisplay($content, $title) { // Finalize page and output to browser
 function display($content, $title, $topnav=true, $leftnav=true, $rightnav=true, $badstart=false) { // Finalize page and output to browser.
     
     global $numqueries, $userrow, $controlrow, $version, $build;
+		
+		$check = protectcsfr();;
+	$link = opendb();
     if (!isset($controlrow)) {
-        $controlquery = doquery("SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
-        $controlrow = mysql_fetch_array($controlquery);
+        $controlquery = doquery($link, "SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
+        $controlrow = mysqli_fetch_array($controlquery);
     }
     if ($badstart == false) { global $starttime; } else { $starttime = $badstart; }
     
     // Make page tags for XHTML validation.
-    $xml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
+    $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     . "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"DTD/xhtml1-transitional.dtd\">\n"
     . "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
+	$xml = libxml_disable_entity_loader( true );
 
     $template = gettemplate("primary");
     
@@ -180,14 +221,14 @@ function display($content, $title, $topnav=true, $leftnav=true, $rightnav=true, 
     if (isset($userrow)) {
         
         // Get userrow again, in case something has been updated.
-        $userquery = doquery("SELECT * FROM {{table}} WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+        $userquery = doquery($link, "SELECT * FROM {{table}} WHERE id='".$userrow["id"]."' LIMIT 1", "users");
         unset($userrow);
-        $userrow = mysql_fetch_array($userquery);
+        $userrow = mysqli_fetch_array($userquery);
         
         // Current town name.
         if ($userrow["currentaction"] == "In Town") {
-            $townquery = doquery("SELECT * FROM {{table}} WHERE latitude='".$userrow["latitude"]."' AND longitude='".$userrow["longitude"]."' LIMIT 1", "towns");
-            $townrow = mysql_fetch_array($townquery);
+            $townquery = doquery($link, "SELECT * FROM {{table}} WHERE latitude='".$userrow["latitude"]."' AND longitude='".$userrow["longitude"]."' LIMIT 1", "towns");
+            $townrow = mysqli_fetch_array($townquery);
             $userrow["currenttown"] = "Welcome to <b>".$townrow["name"]."</b>.<br /><br />";
         } else {
             $userrow["currenttown"] = "";
@@ -231,10 +272,10 @@ function display($content, $title, $topnav=true, $leftnav=true, $rightnav=true, 
         if ($userrow["currenthp"] <= ($userrow["maxhp"]/5)) { $userrow["currenthp"] = "<blink><span class=\"highlight\"><b>*".$userrow["currenthp"]."*</b></span></blink>"; }
         if ($userrow["currentmp"] <= ($userrow["maxmp"]/5)) { $userrow["currentmp"] = "<blink><span class=\"highlight\"><b>*".$userrow["currentmp"]."*</b></span></blink>"; }
 
-        $spellquery = doquery("SELECT id,name,type FROM {{table}}","spells");
+        $spellquery = doquery($link, "SELECT id,name,type FROM {{table}}","spells");
         $userspells = explode(",",$userrow["spells"]);
         $userrow["magiclist"] = "";
-        while ($spellrow = mysql_fetch_array($spellquery)) {
+        while ($spellrow = mysqli_fetch_array($spellquery)) {
             $spell = false;
             foreach($userspells as $a => $b) {
                 if ($b == $spellrow["id"] && $spellrow["type"] == 1) { $spell = true; }
@@ -247,9 +288,9 @@ function display($content, $title, $topnav=true, $leftnav=true, $rightnav=true, 
         
         // Travel To list.
         $townslist = explode(",",$userrow["towns"]);
-        $townquery2 = doquery("SELECT * FROM {{table}} ORDER BY id", "towns");
+        $townquery2 = doquery($link, "SELECT * FROM {{table}} ORDER BY id", "towns");
         $userrow["townslist"] = "";
-        while ($townrow2 = mysql_fetch_array($townquery2)) {
+        while ($townrow2 = mysqli_fetch_array($townquery2)) {
             $town = false;
             foreach($townslist as $a => $b) {
                 if ($b == $townrow2["id"]) { $town = true; }
@@ -277,10 +318,11 @@ function display($content, $title, $topnav=true, $leftnav=true, $rightnav=true, 
     $page = parsetemplate($template, $finalarray);
     $page = $xml . $page;
     
-    if ($controlrow["compression"] == 1) { ob_start("ob_gzhandler"); }
+    if ($controlrow["compression"] == 1) 
+//	{ ob_start("ob_gzhandler"); } 
     echo $page;
     die();
-    
+	 
 }
 
 ?>

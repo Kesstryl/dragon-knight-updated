@@ -1,16 +1,20 @@
 <?php // index.php :: Primary program script, evil alien overlord, you decide.
 
 if (file_exists('install.php')) { die("Please delete <b>install.php</b> from your Dragon Knight directory before continuing."); }
+
 include('lib.php');
 include('cookies.php');
 $link = opendb();
-$controlquery = doquery("SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
-$controlrow = mysql_fetch_array($controlquery);
+$check = protectcsfr();
+$controlquery = doquery($link, "SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
+$controlrow = mysqli_fetch_array($controlquery);
 
 // Login (or verify) if not logged in.
 $userrow = checkcookies();
 if ($userrow == false) { 
     if (isset($_GET["do"])) {
+		$check = protectcsfr();
+		$_GET = protect($_GET);
         if ($_GET["do"] == "verify") { header("Location: users.php?do=verify"); die(); }
     }
     header("Location: login.php?do=login"); die(); 
@@ -23,6 +27,9 @@ if ($controlrow["verifyemail"] == 1 && $userrow["verify"] != 1) { header("Locati
 if ($userrow["authlevel"] == 2) { die("Your account has been blocked. Please try back later."); }
 
 if (isset($_GET["do"])) {
+	
+	$check = protectcsfr();
+	$_GET = array_map('protectarray', $_GET);
     $do = explode(":",$_GET["do"]);
     
     // Town functions.
@@ -35,6 +42,7 @@ if (isset($_GET["do"])) {
     elseif ($do[0] == "maps2") { include('towns.php'); maps2($do[1]); }
     elseif ($do[0] == "maps3") { include('towns.php'); maps3($do[1]); }
     elseif ($do[0] == "gotown") { include('towns.php'); travelto($do[1]); }
+	elseif ($do[0] == "topten") { include('towns.php'); topten(); }
     
     // Exploring functions.
     elseif ($do[0] == "move") { include('explore.php'); move(); }
@@ -78,15 +86,16 @@ function donothing() {
 function dotown() { // Spit out the main town page.
     
     global $userrow, $controlrow, $numqueries;
-    
-    $townquery = doquery("SELECT * FROM {{table}} WHERE latitude='".$userrow["latitude"]."' AND longitude='".$userrow["longitude"]."' LIMIT 1", "towns");
-    if (mysql_num_rows($townquery) == 0) { display("There is an error with your user account, or with the town data. Please try again.","Error"); }
-    $townrow = mysql_fetch_array($townquery);
+
+    $link = opendb();
+    $townquery = doquery($link, "SELECT * FROM {{table}} WHERE latitude='".$userrow["latitude"]."' AND longitude='".$userrow["longitude"]."' LIMIT 1", "towns");
+    if (mysqli_num_rows($townquery) == 0) { display("There is an error with your user account, or with the town data. Please try again.","Error"); }
+    $townrow = mysqli_fetch_array($townquery);
     
     // News box. Grab latest news entry and display it. Something a little more graceful coming soon maybe.
     if ($controlrow["shownews"] == 1) { 
-        $newsquery = doquery("SELECT * FROM {{table}} ORDER BY id DESC LIMIT 1", "news");
-        $newsrow = mysql_fetch_array($newsquery);
+        $newsquery = doquery($link, "SELECT * FROM {{table}} ORDER BY id DESC LIMIT 1", "news");
+        $newsrow = mysqli_fetch_array($newsquery);
         $townrow["news"] = "<table width=\"95%\"><tr><td class=\"title\">Latest News</td></tr><tr><td>\n";
         $townrow["news"] .= "<span class=\"light\">[".prettydate($newsrow["postdate"])."]</span><br />".nl2br($newsrow["content"]);
         $townrow["news"] .= "</td></tr></table>\n";
@@ -94,10 +103,10 @@ function dotown() { // Spit out the main town page.
     
     // Who's Online. Currently just members. Guests maybe later.
     if ($controlrow["showonline"] == 1) {
-        $onlinequery = doquery("SELECT * FROM {{table}} WHERE UNIX_TIMESTAMP(onlinetime) >= '".(time()-600)."' ORDER BY charname", "users");
+        $onlinequery = doquery($link, "SELECT * FROM {{table}} WHERE UNIX_TIMESTAMP(onlinetime) >= '".(time()-600)."' ORDER BY charname", "users");
         $townrow["whosonline"] = "<table width=\"95%\"><tr><td class=\"title\">Who's Online</td></tr><tr><td>\n";
-        $townrow["whosonline"] .= "There are <b>" . mysql_num_rows($onlinequery) . "</b> user(s) online within the last 10 minutes: ";
-        while ($onlinerow = mysql_fetch_array($onlinequery)) { $townrow["whosonline"] .= "<a href=\"index.php?do=onlinechar:".$onlinerow["id"]."\">".$onlinerow["charname"]."</a>" . ", "; }
+        $townrow["whosonline"] .= "There are <b>" . mysqli_num_rows($onlinequery) . "</b> user(s) online within the last 10 minutes: ";
+        while ($onlinerow = mysqli_fetch_array($onlinequery)) { $townrow["whosonline"] .= "<a href=\"index.php?do=onlinechar:".$onlinerow["id"]."\">".$onlinerow["charname"]."</a>" . ", "; }
         $townrow["whosonline"] = rtrim($townrow["whosonline"], ", ");
         $townrow["whosonline"] .= "</td></tr></table>\n";
     } else { $townrow["whosonline"] = ""; }
@@ -141,7 +150,8 @@ function dofight() { // Redirect to fighting.
 function showchar() {
     
     global $userrow, $controlrow;
-    
+	$check = protectcsfr();
+    $link = opendb();
     // Format various userrow stuffs.
     $userrow["experience"] = number_format($userrow["experience"]);
     $userrow["gold"] = number_format($userrow["gold"]);
@@ -156,8 +166,8 @@ function showchar() {
         $userrow["plusgold"] = "<span class=\"light\">(".$userrow["goldbonus"]."%)</span>";
     } else { $userrow["plusgold"] = ""; }
     
-    $levelquery = doquery("SELECT ". $userrow["charclass"]."_exp FROM {{table}} WHERE id='".($userrow["level"]+1)."' LIMIT 1", "levels");
-    $levelrow = mysql_fetch_array($levelquery);
+    $levelquery = doquery($link, "SELECT ". $userrow["charclass"]."_exp FROM {{table}} WHERE id='".($userrow["level"]+1)."' LIMIT 1", "levels");
+    $levelrow = mysqli_fetch_array($levelquery);
     if ($userrow["level"] < 99) { $userrow["nextlevel"] = number_format($levelrow[$userrow["charclass"]."_exp"]); } else { $userrow["nextlevel"] = "<span class=\"light\">None</span>"; }
 
     if ($userrow["charclass"] == 1) { $userrow["charclass"] = $controlrow["class1name"]; }
@@ -168,10 +178,10 @@ function showchar() {
     elseif ($userrow["difficulty"] == 2) { $userrow["difficulty"] = $controlrow["diff2name"]; }
     elseif ($userrow["difficulty"] == 3) { $userrow["difficulty"] = $controlrow["diff3name"]; }
     
-    $spellquery = doquery("SELECT id,name FROM {{table}}","spells");
+    $spellquery = doquery($link, "SELECT id,name FROM {{table}}","spells");
     $userspells = explode(",",$userrow["spells"]);
     $userrow["magiclist"] = "";
-    while ($spellrow = mysql_fetch_array($spellquery)) {
+    while ($spellrow = mysqli_fetch_array($spellquery)) {
         $spell = false;
         foreach($userspells as $a => $b) {
             if ($b == $spellrow["id"]) { $spell = true; }
@@ -183,7 +193,7 @@ function showchar() {
     if ($userrow["magiclist"] == "") { $userrow["magiclist"] = "None"; }
     
     // Make page tags for XHTML validation.
-    $xml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
+    $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     . "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"DTD/xhtml1-transitional.dtd\">\n"
     . "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
     
@@ -198,8 +208,10 @@ function showchar() {
 function onlinechar($id) {
     
     global $controlrow;
-    $userquery = doquery("SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "users");
-    if (mysql_num_rows($userquery) == 1) { $userrow = mysql_fetch_array($userquery); } else { display("No such user.", "Error"); }
+	$check = protectcsfr();
+	$link = opendb();
+    $userquery = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "users");
+    if (mysqli_num_rows($userquery) == 1) { $userrow = mysqli_fetch_array($userquery); } else { display("No such user.", "Error"); }
     
     // Format various userrow stuffs.
     $userrow["experience"] = number_format($userrow["experience"]);
@@ -215,8 +227,8 @@ function onlinechar($id) {
         $userrow["plusgold"] = "<span class=\"light\">(".$userrow["goldbonus"]."%)</span>";
     } else { $userrow["plusgold"] = ""; }
     
-    $levelquery = doquery("SELECT ". $userrow["charclass"]."_exp FROM {{table}} WHERE id='".($userrow["level"]+1)."' LIMIT 1", "levels");
-    $levelrow = mysql_fetch_array($levelquery);
+    $levelquery = doquery($link, "SELECT ". $userrow["charclass"]."_exp FROM {{table}} WHERE id='".($userrow["level"]+1)."' LIMIT 1", "levels");
+    $levelrow = mysqli_fetch_array($levelquery);
     $userrow["nextlevel"] = number_format($levelrow[$userrow["charclass"]."_exp"]);
 
     if ($userrow["charclass"] == 1) { $userrow["charclass"] = $controlrow["class1name"]; }
@@ -236,12 +248,12 @@ function onlinechar($id) {
 function showmap() {
     
     global $userrow; 
-    
+    $check = protectcsfr();
     // Make page tags for XHTML validation.
-    $xml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
+    $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     . "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"DTD/xhtml1-transitional.dtd\">\n"
     . "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
-    
+    $xml = libxml_disable_entity_loader( true );
     $page = $xml . gettemplate("minimal");
     $array = array("content"=>"<center><img src=\"images/map.gif\" alt=\"Map\" /></center>", "title"=>"Map");
     echo parsetemplate($page, $array);
@@ -252,19 +264,21 @@ function showmap() {
 function babblebox() {
     
     global $userrow;
-    
+	$check = protectcsfr();
+    $link = opendb();
     if (isset($_POST["babble"])) {
         $safecontent = makesafe($_POST["babble"]);
+		$safecontent = protect($_POST['babble']);
         if ($safecontent == "" || $safecontent == " ") { //blank post. do nothing.
-        } else { $insert = doquery("INSERT INTO {{table}} SET id='',posttime=NOW(),author='".$userrow["charname"]."',babble='$safecontent'", "babble"); }
+        } else { $insert = doquery($link, "INSERT INTO {{table}} SET id='',posttime=NOW(),author='".$userrow["charname"]."',babble='$safecontent'", "babble"); }
         header("Location: index.php?do=babblebox");
         die();
     }
     
     $babblebox = array("content"=>"");
     $bg = 1;
-    $babblequery = doquery("SELECT * FROM {{table}} ORDER BY id DESC LIMIT 20", "babble");
-    while ($babblerow = mysql_fetch_array($babblequery)) {
+    $babblequery = doquery($link, "SELECT * FROM {{table}} ORDER BY id DESC LIMIT 20", "babble");
+    while ($babblerow = mysqli_fetch_array($babblequery)) {
         if ($bg == 1) { $new = "<div style=\"width:98%; background-color:#eeeeee;\">[<b>".$babblerow["author"]."</b>] ".$babblerow["babble"]."</div>\n"; $bg = 2; }
         else { $new = "<div style=\"width:98%; background-color:#ffffff;\">[<b>".$babblerow["author"]."</b>] ".stripslashes($babblerow["babble"])."</div>\n"; $bg = 1; } 
         $babblebox["content"] = $new . $babblebox["content"];
@@ -275,6 +289,7 @@ function babblebox() {
     $xml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
     . "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"DTD/xhtml1-transitional.dtd\">\n"
     . "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
+	$xml = libxml_disable_entity_loader( true );
     $page = $xml . gettemplate("babblebox");
     echo parsetemplate($page, $babblebox);
     die();

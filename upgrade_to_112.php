@@ -1,17 +1,22 @@
 <?
 
+//This script is here because it came with the original dk engine and is not necessary.  
+//Delete from directory on any production servers for security reasons.
+
 include('config.php');
 include('lib.php');
+$check = protectcsfr();
 $link = opendb();
 $prefix = $dbsettings["prefix"];
 
 // Thanks to Predrag Supurovic from php.net for this function!
 function dobatch ($p_query) {
+	$link = opendb();
   $query_split = preg_split ("/[;]+/", $p_query);
   foreach ($query_split as $command_line) {
    $command_line = trim($command_line);
    if ($command_line != '') {
-     $query_result = mysql_query($command_line);
+     $query_result = mysqli_query($link, $command_line);
      if ($query_result == 0) {
        break;
      };
@@ -330,12 +335,12 @@ $levels["3"] = array(
     
 $errors = 0; $errorlist = "";
 
-$mainquery = mysql_query("SELECT id,level,charclass,spells FROM $users ORDER BY id");
-while ($mainrow = mysql_fetch_array($mainquery)) {
+$mainquery = mysqli_query($link, "SELECT id,level,charclass,spells FROM $users ORDER BY id");
+while ($mainrow = mysqli_fetch_array($mainquery)) {
     $level = $mainrow["level"];
     $charclass = $mainrow["charclass"];
     $newspell = $levels[$charclass][$level];
-    $newquery = mysql_query("UPDATE $users SET spells='$newspell' WHERE id='".$mainrow["id"]."' LIMIT 1");
+    $newquery = mysqli_query($link, "UPDATE $users SET spells='$newspell' WHERE id='".$mainrow["id"]."' LIMIT 1");
     if ($newquery != true) {
         $errors++; $errorlist .= mysql_error() . "<br />";  
     }

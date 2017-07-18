@@ -1,8 +1,9 @@
 <?php 
-include('lib.php'); 
+include('lib.php');
+$check = protectcsfr();
 $link = opendb();
-$controlquery = doquery("SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
-$controlrow = mysql_fetch_array($controlquery);
+$controlquery = doquery($link, "SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
+$controlrow = mysqli_fetch_array($controlquery);
 ob_start("ob_gzhandler");
 ?>
 

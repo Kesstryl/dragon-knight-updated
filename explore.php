@@ -3,7 +3,8 @@
 function move() {
     
     global $userrow, $controlrow;
-    
+	$check = protectcsfr();
+    $link = opendb();
     if ($userrow["currentaction"] == "Fighting") { header("Location: index.php?do=fight"); die(); }
     
     $latitude = $userrow["latitude"];
@@ -13,9 +14,9 @@ function move() {
     if (isset($_POST["east"])) { $longitude++; if ($longitude > $controlrow["gamesize"]) { $longitude = $controlrow["gamesize"]; } }
     if (isset($_POST["west"])) { $longitude--; if ($longitude < ($controlrow["gamesize"]*-1)) { $longitude = ($controlrow["gamesize"]*-1); } }
     
-    $townquery = doquery("SELECT id FROM {{table}} WHERE latitude='$latitude' AND longitude='$longitude' LIMIT 1", "towns");
-    if (mysql_num_rows($townquery) > 0) {
-        $townrow = mysql_fetch_array($townquery);
+    $townquery = doquery($link, "SELECT id FROM {{table}} WHERE latitude='$latitude' AND longitude='$longitude' LIMIT 1", "towns");
+    if (mysqli_num_rows($townquery) > 0) {
+        $townrow = mysqli_fetch_array($townquery);
         include('towns.php');
         travelto($townrow["id"], false);
         die();
@@ -29,7 +30,7 @@ function move() {
     }
 
     
-    $updatequery = doquery("UPDATE {{table}} SET $action latitude='$latitude', longitude='$longitude', dropcode='0' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+    $updatequery = doquery($link, "UPDATE {{table}} SET $action latitude='$latitude', longitude='$longitude', dropcode='0' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
     header("Location: index.php");
     
 }

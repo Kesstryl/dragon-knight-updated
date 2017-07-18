@@ -2,14 +2,18 @@
 
 include('lib.php');
 include('cookies.php');
+$check = protectcsfr();
 $link = opendb();
 $userrow = checkcookies();
-if ($userrow == false) { die("Please log in to the <a href=\"../login.php?do=login\">game</a> before using the control panel."); }
-if ($userrow["authlevel"] != 1) { die("You must have administrator privileges to use the control panel."); }
-$controlquery = doquery("SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
-$controlrow = mysql_fetch_array($controlquery);
+if ($userrow == false) { header("Location: index.php");}
+if ($userrow["authlevel"] != 1) { header("Location: index.php")or die(); } 
+$controlquery = doquery($link, "SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
+$controlrow = mysqli_fetch_array($controlquery);
 
 if (isset($_GET["do"])) {
+	
+	$check = protectcsfr();
+	$_GET = array_map('protectarray', $_GET);
     $do = explode(":",$_GET["do"]);
     
     if ($do[0] == "main") { main(); }
@@ -40,8 +44,15 @@ function donothing() {
 
 function main() {
     
+	$token = admintoken();
     if (isset($_POST["submit"])) {
-        extract($_POST);
+		
+		$check = protectcsfr();
+		$link = opendb();
+		$_POST = array_map('protectarray', $_POST);
+        extract($_POST, EXTR_SKIP);
+		if ($_POST["token"] != $token) die("no csfr here");
+		
         $errors = 0;
         $errorlist = "";
         if ($gamename == "") { $errors++; $errorlist .= "Game name is required.<br />"; }
@@ -58,7 +69,7 @@ function main() {
         if ($diff3mod == "") { $errors++; $errorlist .= "Difficulty 3 value is required.<br />"; }
         
         if ($errors == 0) { 
-            $query = doquery("UPDATE {{table}} SET gamename='$gamename',gamesize='$gamesize',forumtype='$forumtype',forumaddress='$forumaddress',compression='$compression',class1name='$class1name',class2name='$class2name',class3name='$class3name',diff1name='$diff1name',diff2name='$diff2name',diff3name='$diff3name',diff2mod='$diff2mod',diff3mod='$diff3mod',gameopen='$gameopen',verifyemail='$verifyemail',gameurl='$gameurl',adminemail='$adminemail',shownews='$shownews',showonline='$showonline',showbabble='$showbabble' WHERE id='1' LIMIT 1", "control");
+            $query = doquery($link, "UPDATE {{table}} SET gamename='$gamename',gamesize='$gamesize',forumtype='$forumtype',forumaddress='$forumaddress',compression='$compression',class1name='$class1name',class2name='$class2name',class3name='$class3name',diff1name='$diff1name',diff2name='$diff2name',diff3name='$diff3name',diff2mod='$diff2mod',diff3mod='$diff3mod',gameopen='$gameopen',verifyemail='$verifyemail',gameurl='$gameurl',adminemail='$adminemail',shownews='$shownews',showonline='$showonline',showbabble='$showbabble' WHERE id='1' LIMIT 1", "control");
             admindisplay("Settings updated.","Main Settings");
         } else {
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Main Settings");
@@ -92,6 +103,7 @@ These options control several major settings for the overall game engine.<br /><
 <tr><td width="20%">Difficulty 2 Value:</td><td><input type="text" name="diff2mod" size="3" maxlength="3" value="{{diff2mod}}" /><br /><span class="small">Default is 1.2. Specify factoral value for medium difficulty here.</span></td></tr>
 <tr><td width="20%">Difficulty 3 Name:</td><td><input type="text" name="diff3name" size="20" maxlength="50" value="{{diff3name}}" /><br /></td></tr>
 <tr><td width="20%">Difficulty 3 Value:</td><td><input type="text" name="diff3mod" size="3" maxlength="3" value="{{diff3mod}}" /><br /><span class="small">Default is 1.5. Specify factoral value for hard difficulty here.</span></td></tr>
+<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -120,24 +132,31 @@ END;
 
 function items() {
     
-    $query = doquery("SELECT id,name FROM {{table}} ORDER BY id", "items");
+	$link = opendb();
+    $query = doquery($link, "SELECT id,name FROM {{table}} ORDER BY id", "items");
     $page = "<b><u>Edit Items</u></b><br />Click an item's name to edit it.<br /><br /><table width=\"50%\">\n";
     $count = 1;
-    while ($row = mysql_fetch_array($query)) {
+    while ($row = mysqli_fetch_array($query)) {
         if ($count == 1) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">".$row["id"]."</td><td style=\"background-color: #eeeeee;\"><a href=\"admin.php?do=edititem:".$row["id"]."\">".$row["name"]."</a></td></tr>\n"; $count = 2; }
         else { $page .= "<tr><td width=\"8%\" style=\"background-color: #ffffff;\">".$row["id"]."</td><td style=\"background-color: #ffffff;\"><a href=\"admin.php?do=edititem:".$row["id"]."\">".$row["name"]."</a></td></tr>\n"; $count = 1; }
     }
-    if (mysql_num_rows($query) == 0) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">No items found.</td></tr>\n"; }
+    if (mysqli_num_rows($query) == 0) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">No items found.</td></tr>\n"; }
     $page .= "</table>";
     admindisplay($page, "Edit Items");
     
 }
 
 function edititem($id) {
-    
+	
+    $token = admintoken();
+	$link = opendb();
     if (isset($_POST["submit"])) {
-        
-        extract($_POST);
+		
+		$check = protectcsfr();
+		$_POST = array_map('protectarray', $_POST);
+		extract($_POST, EXTR_SKIP);
+		if ($_POST["token"] != $token) die("no csfr here");
+		
         $errors = 0;
         $errorlist = "";
         if ($name == "") { $errors++; $errorlist .= "Name is required.<br />"; }
@@ -148,7 +167,7 @@ function edititem($id) {
         if ($special == "" || $special == " ") { $special = "X"; }
         
         if ($errors == 0) { 
-            $query = doquery("UPDATE {{table}} SET name='$name',type='$type',buycost='$buycost',attribute='$attribute',special='$special' WHERE id='$id' LIMIT 1", "items");
+            $query = doquery($link, "UPDATE {{table}} SET name='$name',type='$type',buycost='$buycost',attribute='$attribute',special='$special' WHERE id='$id' LIMIT 1", "items");
             admindisplay("Item updated.","Edit Items");
         } else {
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Items");
@@ -156,9 +175,8 @@ function edititem($id) {
         
     }   
         
-    
-    $query = doquery("SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "items");
-    $row = mysql_fetch_array($query);
+    $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "items");
+    $row = mysqli_fetch_array($query);
 
 $page = <<<END
 <b><u>Edit Items</u></b><br /><br />
@@ -170,6 +188,7 @@ $page = <<<END
 <tr><td width="20%">Cost:</td><td><input type="text" name="buycost" size="5" maxlength="10" value="{{buycost}}" /> gold</td></tr>
 <tr><td width="20%">Attribute:</td><td><input type="text" name="attribute" size="5" maxlength="10" value="{{attribute}}" /><br /><span class="small">How much the item adds to total attackpower (weapons) or defensepower (armor/shields).</span></td></tr>
 <tr><td width="20%">Special:</td><td><input type="text" name="special" size="30" maxlength="50" value="{{special}}" /><br /><span class="small">Should be either a special code or <span class="highlight">X</span> to disable. Edit this field very carefully because mistakes to formatting or field names can create problems in the game.</span></td></tr>
+<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -198,14 +217,15 @@ END;
 
 function drops() {
     
-    $query = doquery("SELECT id,name FROM {{table}} ORDER BY id", "drops");
+	$link = opendb();
+    $query = doquery($link, "SELECT id,name FROM {{table}} ORDER BY id", "drops");
     $page = "<b><u>Edit Drops</u></b><br />Click an item's name to edit it.<br /><br /><table width=\"50%\">\n";
     $count = 1;
-    while ($row = mysql_fetch_array($query)) {
+    while ($row = mysqli_fetch_array($query)) {
         if ($count == 1) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">".$row["id"]."</td><td style=\"background-color: #eeeeee;\"><a href=\"admin.php?do=editdrop:".$row["id"]."\">".$row["name"]."</a></td></tr>\n"; $count = 2; }
         else { $page .= "<tr><td width=\"8%\" style=\"background-color: #ffffff;\">".$row["id"]."</td><td style=\"background-color: #ffffff;\"><a href=\"admin.php?do=editdrop:".$row["id"]."\">".$row["name"]."</a></td></tr>\n"; $count = 1; }
     }
-    if (mysql_num_rows($query) == 0) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">No items found.</td></tr>\n"; }
+    if (mysqli_num_rows($query) == 0) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">No items found.</td></tr>\n"; }
     $page .= "</table>";
     admindisplay($page, "Edit Drops");
     
@@ -213,9 +233,16 @@ function drops() {
 
 function editdrop($id) {
     
+	$token = admintoken();
+	$link = opendb();
+	
     if (isset($_POST["submit"])) {
         
-        extract($_POST);
+		$check = protectcsfr();
+		$_POST = array_map('protectarray', $_POST);
+        extract($_POST, EXTR_SKIP);
+		if ($_POST["token"] != $token) die("no csfr here");
+		
         $errors = 0;
         $errorlist = "";
         if ($name == "") { $errors++; $errorlist .= "Name is required.<br />"; }
@@ -225,7 +252,7 @@ function editdrop($id) {
         if ($attribute2 == "" || $attribute2 == " ") { $attribute2 = "X"; }
         
         if ($errors == 0) { 
-            $query = doquery("UPDATE {{table}} SET name='$name',mlevel='$mlevel',attribute1='$attribute1',attribute2='$attribute2' WHERE id='$id' LIMIT 1", "drops");
+            $query = doquery($link, "UPDATE {{table}} SET name='$name',mlevel='$mlevel',attribute1='$attribute1',attribute2='$attribute2' WHERE id='$id' LIMIT 1", "drops");
             admindisplay("Item updated.","Edit Drops");
         } else {
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Drops");
@@ -233,9 +260,8 @@ function editdrop($id) {
         
     }   
         
-    
-    $query = doquery("SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "drops");
-    $row = mysql_fetch_array($query);
+    $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "drops");
+    $row = mysqli_fetch_array($query);
 
 $page = <<<END
 <b><u>Edit Drops</u></b><br /><br />
@@ -246,6 +272,7 @@ $page = <<<END
 <tr><td width="20%">Monster Level:</td><td><input type="text" name="mlevel" size="5" maxlength="10" value="{{mlevel}}" /><br /><span class="small">Minimum monster level that will drop this item.</span></td></tr>
 <tr><td width="20%">Attribute 1:</td><td><input type="text" name="attribute1" size="30" maxlength="50" value="{{attribute1}}" /><br /><span class="small">Must be a special code. First attribute cannot be disabled. Edit this field very carefully because mistakes to formatting or field names can create problems in the game.</span></td></tr>
 <tr><td width="20%">Attribute 2:</td><td><input type="text" name="attribute2" size="30" maxlength="50" value="{{attribute2}}" /><br /><span class="small">Should be either a special code or <span class="highlight">X</span> to disable. Edit this field very carefully because mistakes to formatting or field names can create problems in the game.</span></td></tr>
+<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -270,14 +297,15 @@ END;
 
 function towns() {
     
-    $query = doquery("SELECT id,name FROM {{table}} ORDER BY id", "towns");
+	$link = opendb();
+    $query = doquery($link, "SELECT id,name FROM {{table}} ORDER BY id", "towns");
     $page = "<b><u>Edit Towns</u></b><br />Click an town's name to edit it.<br /><br /><table width=\"50%\">\n";
     $count = 1;
-    while ($row = mysql_fetch_array($query)) {
+    while ($row = mysqli_fetch_array($query)) {
         if ($count == 1) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">".$row["id"]."</td><td style=\"background-color: #eeeeee;\"><a href=\"admin.php?do=edittown:".$row["id"]."\">".$row["name"]."</a></td></tr>\n"; $count = 2; }
         else { $page .= "<tr><td width=\"8%\" style=\"background-color: #ffffff;\">".$row["id"]."</td><td style=\"background-color: #ffffff;\"><a href=\"admin.php?do=edittown:".$row["id"]."\">".$row["name"]."</a></td></tr>\n"; $count = 1; }
     }
-    if (mysql_num_rows($query) == 0) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">No towns found.</td></tr>\n"; }
+    if (mysqli_num_rows($query) == 0) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">No towns found.</td></tr>\n"; }
     $page .= "</table>";
     admindisplay($page, "Edit Towns");
     
@@ -285,9 +313,16 @@ function towns() {
 
 function edittown($id) {
     
+	$token = admintoken();
+	$link = opendb();
+	
     if (isset($_POST["submit"])) {
         
-        extract($_POST);
+		$check = protectcsfr();
+		$_POST = array_map('protectarray', $_POST);
+		extract($_POST, EXTR_SKIP);
+		if ($_POST["token"] != $token) die("no csfr here");
+		
         $errors = 0;
         $errorlist = "";
         if ($name == "") { $errors++; $errorlist .= "Name is required.<br />"; }
@@ -305,7 +340,7 @@ function edittown($id) {
         if ($itemslist == "") { $errors++; $errorlist .= "Items List is required.<br />"; }
         
         if ($errors == 0) { 
-            $query = doquery("UPDATE {{table}} SET name='$name',latitude='$latitude',longitude='$longitude',innprice='$innprice',mapprice='$mapprice',travelpoints='$travelpoints',itemslist='$itemslist' WHERE id='$id' LIMIT 1", "towns");
+            $query = doquery($link, "UPDATE {{table}} SET name='$name',latitude='$latitude',longitude='$longitude',innprice='$innprice',mapprice='$mapprice',travelpoints='$travelpoints',itemslist='$itemslist' WHERE id='$id' LIMIT 1", "towns");
             admindisplay("Town updated.","Edit Towns");
         } else {
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Towns");
@@ -314,8 +349,8 @@ function edittown($id) {
     }   
         
     
-    $query = doquery("SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "towns");
-    $row = mysql_fetch_array($query);
+    $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "towns");
+    $row = mysqli_fetch_array($query);
 
 $page = <<<END
 <b><u>Edit Towns</u></b><br /><br />
@@ -329,6 +364,7 @@ $page = <<<END
 <tr><td width="20%">Map Price:</td><td><input type="text" name="mapprice" size="5" maxlength="10" value="{{mapprice}}" /> gold<br /><span class="small">How much it costs to buy the map to this town.</span></td></tr>
 <tr><td width="20%">Travel Points:</td><td><input type="text" name="travelpoints" size="5" maxlength="10" value="{{travelpoints}}" /><br /><span class="small">How many TP are consumed when travelling to this town.</span></td></tr>
 <tr><td width="20%">Items List:</td><td><input type="text" name="itemslist" size="30" maxlength="200" value="{{itemslist}}" /><br /><span class="small">Comma-separated list of item ID numbers available for purchase at this town. (Example: <span class="highlight">1,2,3,6,9,10,13,20</span>)</span></td></tr>
+<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -342,11 +378,11 @@ END;
 function monsters() {
     
     global $controlrow;
+    $link = opendb();
+    $statquery = doquery($link, "SELECT * FROM {{table}} ORDER BY level DESC LIMIT 1", "monsters");
+    $statrow = mysqli_fetch_array($statquery);
     
-    $statquery = doquery("SELECT * FROM {{table}} ORDER BY level DESC LIMIT 1", "monsters");
-    $statrow = mysql_fetch_array($statquery);
-    
-    $query = doquery("SELECT id,name FROM {{table}} ORDER BY id", "monsters");
+    $query = doquery($link, "SELECT id,name FROM {{table}} ORDER BY id", "monsters");
     $page = "<b><u>Edit Monsters</u></b><br />";
     
     if (($controlrow["gamesize"]/5) != $statrow["level"]) {
@@ -355,11 +391,11 @@ function monsters() {
     
     $page .= "Click an monster's name to edit it.<br /><br /><table width=\"50%\">\n";
     $count = 1;
-    while ($row = mysql_fetch_array($query)) {
+    while ($row = mysqli_fetch_array($query)) {
         if ($count == 1) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">".$row["id"]."</td><td style=\"background-color: #eeeeee;\"><a href=\"admin.php?do=editmonster:".$row["id"]."\">".$row["name"]."</a></td></tr>\n"; $count = 2; }
         else { $page .= "<tr><td width=\"8%\" style=\"background-color: #ffffff;\">".$row["id"]."</td><td style=\"background-color: #ffffff;\"><a href=\"admin.php?do=editmonster:".$row["id"]."\">".$row["name"]."</a></td></tr>\n"; $count = 1; }
     }
-    if (mysql_num_rows($query) == 0) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">No towns found.</td></tr>\n"; }
+    if (mysqli_num_rows($query) == 0) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">No towns found.</td></tr>\n"; }
     $page .= "</table>";
     admindisplay($page, "Edit Monster");
     
@@ -367,9 +403,15 @@ function monsters() {
 
 function editmonster($id) {
     
+	$token = admintoken();
+	$link = opendb();
     if (isset($_POST["submit"])) {
         
-        extract($_POST);
+		$check = protectcsfr();
+		$_POST = array_map('protectarray', $_POST);
+        extract($_POST, EXTR_SKIP);
+		if ($_POST["token"] != $token) die("no csfr here");
+	
         $errors = 0;
         $errorlist = "";
         if ($name == "") { $errors++; $errorlist .= "Name is required.<br />"; }
@@ -387,7 +429,7 @@ function editmonster($id) {
         if (!is_numeric($maxgold)) { $errors++; $errorlist .= "Max Gold must be a number.<br />"; }
         
         if ($errors == 0) { 
-            $query = doquery("UPDATE {{table}} SET name='$name',maxhp='$maxhp',maxdam='$maxdam',armor='$armor',level='$level',maxexp='$maxexp',maxgold='$maxgold',immune='$immune' WHERE id='$id' LIMIT 1", "monsters");
+            $query = doquery($link, "UPDATE {{table}} SET name='$name',maxhp='$maxhp',maxdam='$maxdam',armor='$armor',level='$level',maxexp='$maxexp',maxgold='$maxgold',immune='$immune' WHERE id='$id' LIMIT 1", "monsters");
             admindisplay("Monster updated.","Edit monsters");
         } else {
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit monsters");
@@ -396,8 +438,8 @@ function editmonster($id) {
     }   
         
     
-    $query = doquery("SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "monsters");
-    $row = mysql_fetch_array($query);
+    $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "monsters");
+    $row = mysqli_fetch_array($query);
 
 $page = <<<END
 <b><u>Edit Monsters</u></b><br /><br />
@@ -412,6 +454,7 @@ $page = <<<END
 <tr><td width="20%">Max Experience:</td><td><input type="text" name="maxexp" size="5" maxlength="10" value="{{maxexp}}" /><br /><span class="small">Max experience gained from defeating monster.</span></td></tr>
 <tr><td width="20%">Max Gold:</td><td><input type="text" name="maxgold" size="5" maxlength="10" value="{{maxgold}}" /><br /><span class="small">Max gold gained from defeating monster.</span></td></tr>
 <tr><td width="20%">Immunity:</td><td><select name="immune"><option value="0" {{immune0select}}>None</option><option value="1" {{immune1select}}>Hurt Spells</option><option value="2" {{immune2select}}>Hurt & Sleep Spells</option></select><br /><span class="small">Some monsters may not be hurt by certain spells.</span></td></tr>
+<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -428,14 +471,15 @@ END;
 
 function spells() {
     
-    $query = doquery("SELECT id,name FROM {{table}} ORDER BY id", "spells");
+	$link = opendb();
+    $query = doquery($link, "SELECT id,name FROM {{table}} ORDER BY id", "spells");
     $page = "<b><u>Edit Spells</u></b><br />Click an spell's name to edit it.<br /><br /><table width=\"50%\">\n";
     $count = 1;
-    while ($row = mysql_fetch_array($query)) {
+    while ($row = mysqli_fetch_array($query)) {
         if ($count == 1) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">".$row["id"]."</td><td style=\"background-color: #eeeeee;\"><a href=\"admin.php?do=editspell:".$row["id"]."\">".$row["name"]."</a></td></tr>\n"; $count = 2; }
         else { $page .= "<tr><td width=\"8%\" style=\"background-color: #ffffff;\">".$row["id"]."</td><td style=\"background-color: #ffffff;\"><a href=\"admin.php?do=editspell:".$row["id"]."\">".$row["name"]."</a></td></tr>\n"; $count = 1; }
     }
-    if (mysql_num_rows($query) == 0) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">No spells found.</td></tr>\n"; }
+    if (mysqli_num_rows($query) == 0) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">No spells found.</td></tr>\n"; }
     $page .= "</table>";
     admindisplay($page, "Edit Spells");
     
@@ -443,9 +487,15 @@ function spells() {
 
 function editspell($id) {
     
+	$token = admintoken();
+	$link = opendb();
     if (isset($_POST["submit"])) {
         
-        extract($_POST);
+		$check = protectcsfr();
+		$_POST = array_map('protectarray', $_POST);
+        extract($_POST, EXTR_SKIP);
+		if ($_POST["token"] != $token) die("no csfr here");
+
         $errors = 0;
         $errorlist = "";
         if ($name == "") { $errors++; $errorlist .= "Name is required.<br />"; }
@@ -455,7 +505,7 @@ function editspell($id) {
         if (!is_numeric($attribute)) { $errors++; $errorlist .= "Attribute must be a number.<br />"; }
         
         if ($errors == 0) { 
-            $query = doquery("UPDATE {{table}} SET name='$name',mp='$mp',attribute='$attribute',type='$type' WHERE id='$id' LIMIT 1", "spells");
+            $query = doquery($link, "UPDATE {{table}} SET name='$name',mp='$mp',attribute='$attribute',type='$type' WHERE id='$id' LIMIT 1", "spells");
             admindisplay("Spell updated.","Edit Spells");
         } else {
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Spells");
@@ -464,8 +514,8 @@ function editspell($id) {
     }   
         
     
-    $query = doquery("SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "spells");
-    $row = mysql_fetch_array($query);
+    $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "spells");
+    $row = mysqli_fetch_array($query);
 
 $page = <<<END
 <b><u>Edit Spells</u></b><br /><br />
@@ -476,6 +526,7 @@ $page = <<<END
 <tr><td width="20%">Magic Points:</td><td><input type="text" name="mp" size="5" maxlength="10" value="{{mp}}" /><br /><span class="small">MP required to cast spell.</span></td></tr>
 <tr><td width="20%">Attribute:</td><td><input type="text" name="attribute" size="5" maxlength="10" value="{{attribute}}" /><br /><span class="small">Numeric value of the spell's effect. Ties with type, below.</span></td></tr>
 <tr><td width="20%">Type:</td><td><select name="type"><option value="1" {{type1select}}>Heal</option><option value="2" {{type2select}}>Hurt</option><option value="3" {{type3select}}>Sleep</option><option value="4" {{type4select}}>Uber Attack</option><option value="5" {{type5select}}>Uber Defense</option></select><br /><span class="small">- Heal gives player back [attribute] hit points.<br />- Hurt deals [attribute] damage to monster.<br />- Sleep keeps monster from attacking ([attribute] is monster's chance out of 15 to stay asleep each turn).<br />- Uber Attack increases total attack damage by [attribute] percent.<br />- Uber Defense increases total defense from attack by [attribute] percent.</span></td></tr>
+<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -493,9 +544,10 @@ END;
 }
 
 function levels() {
-
-    $query = doquery("SELECT id FROM {{table}} ORDER BY id DESC LIMIT 1", "levels");
-    $row = mysql_fetch_array($query);
+	
+	$link = opendb();
+    $query = doquery($link, "SELECT id FROM {{table}} ORDER BY id DESC LIMIT 1", "levels");
+    $row = mysqli_fetch_array($query);
     
     $options = "";
     for($i=2; $i<$row["id"]; $i++) {
@@ -518,12 +570,18 @@ END;
 
 function editlevel() {
 
+	$token = admintoken();
+	$check = protectcsfr();
+	$link = opendb();
     if (!isset($_POST["level"])) { admindisplay("No level to edit.", "Edit Levels"); die(); }
     $id = $_POST["level"];
     
     if (isset($_POST["submit"])) {
         
-        extract($_POST);
+		$_POST = array_map('protectarray', $_POST);
+        extract($_POST, EXTR_SKIP);
+		if ($_POST["token"] != $token) die("no csfr here");
+		
         $errors = 0;
         $errorlist = "";
         if ($_POST["one_exp"] == "") { $errors++; $errorlist .= "Class 1 Experience is required.<br />"; }
@@ -579,7 +637,7 @@ UPDATE {{table}} SET
 3_exp='$three_exp', 3_hp='$three_hp', 3_mp='$three_mp', 3_tp='$three_tp', 3_strength='$three_strength', 3_dexterity='$three_dexterity', 3_spells='$three_spells'
 WHERE id='$id' LIMIT 1
 END;
-			$query = doquery($updatequery, "levels");
+			$query = doquery($link, $updatequery, "levels");
             admindisplay("Level updated.","Edit Levels");
         } else {
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Spells");
@@ -587,9 +645,9 @@ END;
         
     }   
         
-    
-    $query = doquery("SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "levels");
-    $row = mysql_fetch_array($query);
+    $link = opendb();
+    $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "levels");
+    $row = mysqli_fetch_array($query);
     global $controlrow;
     $class1name = $controlrow["class1name"];
     $class2name = $controlrow["class2name"];
@@ -632,6 +690,7 @@ Experience values for each level should be the cumulative total amount of experi
 <tr><td width="20%">$class3name Strength:</td><td><input type="text" name="three_strength" size="5" maxlength="5" value="{{3_strength}}" /></td></tr>
 <tr><td width="20%">$class3name Dexterity:</td><td><input type="text" name="three_dexterity" size="5" maxlength="5" value="{{3_dexterity}}" /></td></tr>
 <tr><td width="20%">$class3name Spells:</td><td><input type="text" name="three_spells" size="5" maxlength="3" value="{{3_spells}}" /></td></tr>
+<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -644,14 +703,15 @@ END;
 
 function users() {
     
-    $query = doquery("SELECT id,username FROM {{table}} ORDER BY id", "users");
+	$link = opendb();
+    $query = doquery($link, "SELECT id,username FROM {{table}} ORDER BY id", "users");
     $page = "<b><u>Edit Users</u></b><br />Click a username to edit the account.<br /><br /><table width=\"50%\">\n";
     $count = 1;
-    while ($row = mysql_fetch_array($query)) {
+    while ($row = mysqli_fetch_array($query)) {
         if ($count == 1) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">".$row["id"]."</td><td style=\"background-color: #eeeeee;\"><a href=\"admin.php?do=edituser:".$row["id"]."\">".$row["username"]."</a></td></tr>\n"; $count = 2; }
         else { $page .= "<tr><td width=\"8%\" style=\"background-color: #ffffff;\">".$row["id"]."</td><td style=\"background-color: #ffffff;\"><a href=\"admin.php?do=edituser:".$row["id"]."\">".$row["username"]."</a></td></tr>\n"; $count = 1; }
     }
-    if (mysql_num_rows($query) == 0) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">No spells found.</td></tr>\n"; }
+    if (mysqli_num_rows($query) == 0) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">No spells found.</td></tr>\n"; }
     $page .= "</table>";
     admindisplay($page, "Edit Users");
 
@@ -659,9 +719,15 @@ function users() {
 
 function edituser($id) {
     
+	$token = admintoken();
+	$link = opendb();
     if (isset($_POST["submit"])) {
-        
-        extract($_POST);
+       
+		$check = protectcsfr();
+		$_POST = array_map('protectarray', $_POST);
+        extract ($_POST, EXTR_SKIP);
+		if ($_POST["token"] != $token) die("no csfr here");
+	
         $errors = 0;
         $errorlist = "";
         if ($email == "") { $errors++; $errorlist .= "Email is required.<br />"; }
@@ -767,16 +833,16 @@ slot2id="$slot2id", slot3id="$slot3id", weaponname="$weaponname", armorname="$ar
 slot1name="$slot1name", slot2name="$slot2name", slot3name="$slot3name", dropcode="$dropcode", spells="$spells",
 towns="$towns" WHERE id="$id" LIMIT 1
 END;
-			$query = doquery($updatequery, "users");
+			$query = doquery($link, $updatequery, "users");
             admindisplay("User updated.","Edit Users");
         } else {
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Users");
         }        
         
     }   
-        
-    $query = doquery("SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "users");
-    $row = mysql_fetch_array($query);
+      
+    $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "users");
+    $row = mysqli_fetch_array($query);
     global $controlrow;
     $diff1name = $controlrow["diff1name"];
     $diff2name = $controlrow["diff2name"];
@@ -857,7 +923,7 @@ $page = <<<END
 <tr><td width="20%">Drop Code:</td><td><input type="text" name="dropcode" size="5" maxlength="8" value="{{dropcode}}" /></td></tr>
 <tr><td width="20%">Spells:</td><td><input type="text" name="spells" size="50" maxlength="50" value="{{spells}}" /></td></tr>
 <tr><td width="20%">Towns:</td><td><input type="text" name="towns" size="50" maxlength="50" value="{{towns}}" /></td></tr>
-
+<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -880,15 +946,20 @@ END;
 
 function addnews() {
     
+	$token = admintoken();
+	$link = opendb();
     if (isset($_POST["submit"])) {
         
-        extract($_POST);
+		$check = protectcsfr();
+		$content = protect($_POST['content']);
+		$token = protect($_POST['token']);
+		if ($_POST["token"] != $token) die("no csfr here");
         $errors = 0;
         $errorlist = "";
         if ($content == "") { $errors++; $errorlist .= "Content is required.<br />"; }
         
         if ($errors == 0) { 
-            $query = doquery("INSERT INTO {{table}} SET id='',postdate=NOW(),content='$content'", "news");
+            $query = doquery($link, "INSERT INTO {{table}} SET id='',postdate=NOW(),content='$content'", "news");
             admindisplay("News post added.","Add News");
         } else {
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Add News");
@@ -901,6 +972,7 @@ $page = <<<END
 <form action="admin.php?do=news" method="post">
 Type your post below and then click Submit to add it.<br />
 <textarea name="content" rows="5" cols="50"></textarea><br />
+<input type="hidden" name="token" value="$token" />
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
 END;

@@ -1,8 +1,9 @@
 <?php 
-include('lib.php'); 
+include('lib.php');
+$check = protectcsfr();
 $link = opendb();
-$controlquery = doquery("SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
-$controlrow = mysql_fetch_array($controlquery);
+$controlquery = doquery($link, "SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
+$controlrow = mysqli_fetch_array($controlquery);
 ob_start("ob_gzhandler");
 ?>
 
@@ -80,8 +81,8 @@ a:hover {
 <tr><td><b>Name</b></td><td><b>Cost</b></td><td><b>Type</b></td><td><b>Attribute</b></td></tr>
 <?
 $count = 1;
-$itemsquery = doquery("SELECT * FROM {{table}} ORDER BY id", "spells");
-while ($itemsrow = mysql_fetch_array($itemsquery)) {
+$itemsquery = doquery($link, "SELECT * FROM {{table}} ORDER BY id", "spells");
+while ($itemsrow = mysqli_fetch_array($itemsquery)) {
     if ($count == 1) { $color = "bgcolor=\"#ffffff\""; $count = 2; } else { $color = ""; $count = 1; }
     if ($itemsrow["type"] == 1) { $type = "Heal"; }
     elseif ($itemsrow["type"] == 2) { $type = "Hurt"; }

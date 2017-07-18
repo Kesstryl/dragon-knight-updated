@@ -2,10 +2,11 @@
 
 $dbsettings = Array(
         "server"        => "localhost",     // MySQL server name. (Default: localhost)
-        "user"          => "",              // MySQL username.
+        "user"          => "root",              // MySQL username.
         "pass"          => "",              // MySQL password.
-        "name"          => "",              // MySQL database name.
+        "name"          => "dragonknight",              // MySQL database name.
         "prefix"        => "dk",            // Prefix for table names. (Default: dk)
-        "secretword"    => "");             // Secret word used when hashing information for cookies.
+		"safeserver"	=> "www.localhost",   //use url your actual server is on, leave off http://
+);
 
 ?>
