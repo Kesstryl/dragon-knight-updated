@@ -6,6 +6,7 @@ $link = opendb();
 $start = getmicrotime();
 
 if (isset($_GET["page"])) {
+	$_GET = array_map('protectarray', $_GET);
     $page = $_GET["page"];
     if ($page == 2) { second(); }
     elseif ($page == 3) { third(); }
@@ -657,6 +658,7 @@ CREATE TABLE IF NOT EXISTS `$users` (
   `password` varchar(64) NOT NULL default '',
   `email` varchar(100) NOT NULL default '',
   `verify` varchar(8) NOT NULL default '0',
+  `random` VARCHAR(64) NOT NULL,
   `charname` varchar(30) NOT NULL default '',
   `regdate` datetime NOT NULL default '0000-00-00 00:00:00',
   `onlinetime` datetime NOT NULL default '0000-00-00 00:00:00',
@@ -749,7 +751,8 @@ die();
 
 function fourth() { // Final page: insert new user row, congratulate the person on a job well done.
     
-    extract($_POST);
+	$_POST = array_map('protectarray', $_POST);
+    extract($_POST, EXTR_SKIP);
     if (!isset($username)) { die("Username is required."); }
     if (!isset($password1)) { die("Password is required."); }
     if (!isset($password2)) { die("Verify Password is required."); }
