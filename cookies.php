@@ -2,14 +2,14 @@
 
 
 function checkcookies() {
-	$check = protectcsfr();
+	
 	$link = opendb();
     $row = false;
     
     if (isset($_COOKIE["dkgame"])) {
         
 		if($_SESSION['user_agent'] != $_SERVER['HTTP_USER_AGENT']){
-		die("You are trying to play the game from a different computer.  Please log in again.");
+		header("Location: login.php?do=login"); die(); 
 		}
         // COOKIE FORMAT:
         // {ID} {USERNAME} {PASSWORDHASH} {REMEMBERME}
