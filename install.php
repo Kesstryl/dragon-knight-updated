@@ -778,7 +778,7 @@ $page = <<<END
 <b>Dragon Knight Installation: Page Four</b><br /><br />
 Your admin account was created successfully. Installation is complete.<br /><br />
 Be sure to delete install.php from your Dragon Knight directory for security purposes.<br /><br />
-You are now ready to <a href="index.php">play the game</a>. Note that you must log in through the public section before being allowed into the control panel. Once logged in, an "Admin" link will appear in the Functions box of the left sidebar panel.<br /><br/>
+You are now ready to <a href="login.php">play the game</a>. Note that you must log in through the public section before being allowed into the control panel. Once logged in, an "Admin" link will appear in the Functions box of the left sidebar panel.<br /><br/>
 Thank you for using Dragon Knight!<br /><br />-----<br /><br />
 <b>Optional:</b> Dragon Knight is a free product, and does not require registration of any sort. However, there is an 
 optional "call home" function in the installer, which notifies the author of your game installation. The ONLY information 
