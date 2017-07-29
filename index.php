@@ -19,6 +19,7 @@ if ($userrow == false) {
     }
     header("Location: login.php?do=login"); die(); 
 }
+$token = $userrow['random'];
 // Close game.
 if ($controlrow["gameopen"] == 0) { display("The game is currently closed for maintanence. Please check back later.","Game Closed"); die(); }
 // Force verify if the user isn't verified yet.
@@ -269,9 +270,13 @@ function babblebox() {
     if (isset($_POST["babble"])) {
         $safecontent = makesafe($_POST["babble"]);
 		$safecontent = protect($_POST['babble']);
+		$token = protect($_POST['token']);
+		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
         if ($safecontent == "" || $safecontent == " ") { //blank post. do nothing.
         } else { $insert = doquery($link, "INSERT INTO {{table}} SET id='',posttime=NOW(),author='".$userrow["charname"]."',babble='$safecontent'", "babble"); }
-        header("Location: index.php?do=babblebox");
+        unset($_SESSION['token']);
+		header("Location: index.php?do=babblebox");
         die();
     }
     
@@ -283,7 +288,10 @@ function babblebox() {
         else { $new = "<div style=\"width:98%; background-color:#ffffff;\">[<b>".$babblerow["author"]."</b>] ".stripslashes($babblerow["babble"])."</div>\n"; $bg = 1; } 
         $babblebox["content"] = $new . $babblebox["content"];
     }
-    $babblebox["content"] .= "<center><form action=\"index.php?do=babblebox\" method=\"post\"><input type=\"text\" name=\"babble\" size=\"15\" maxlength=\"120\" /><br /><input type=\"submit\" name=\"submit\" value=\"Babble\" /> <input type=\"reset\" name=\"reset\" value=\"Clear\" /></form></center>";
+	
+	$token = formtoken();
+
+    $babblebox["content"] .= "<center><form action=\"index.php?do=babblebox\" method=\"post\"><input type=\"text\" name=\"babble\" size=\"15\" maxlength=\"120\" /><br /><input type=\"submit\" name=\"submit\" value=\"Babble\" /> <input type=\"reset\" name=\"reset\" value=\"Clear\" /><input type=\"hidden\" name=\"token\" value=\"{$token}\" /></form></center>";
     
     // Make page tags for XHTML validation.
     $xml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"

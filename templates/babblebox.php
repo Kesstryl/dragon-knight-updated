@@ -1,4 +1,5 @@
 <?php
+
 $template = <<<THEVERYENDOFYOU
 <head>
 <title>shoutbox</title>

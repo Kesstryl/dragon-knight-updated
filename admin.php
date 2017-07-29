@@ -44,14 +44,17 @@ function donothing() {
 
 function main() {
     
-	$token = admintoken();
+	$adtoken = admintoken();
     if (isset($_POST["submit"])) {
 		
 		$check = protectcsfr();
 		$link = opendb();
 		$_POST = array_map('protectarray', $_POST);
         extract($_POST, EXTR_SKIP);
-		if ($_POST["token"] != $token) die("no csfr here");
+		if ($_POST["adtoken"] != $adtoken) die("no csfr here");
+		$token = protect($_POST['token']);
+		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
 		
         $errors = 0;
         $errorlist = "";
@@ -70,14 +73,18 @@ function main() {
         
         if ($errors == 0) { 
             $query = doquery($link, "UPDATE {{table}} SET gamename='$gamename',gamesize='$gamesize',forumtype='$forumtype',forumaddress='$forumaddress',compression='$compression',class1name='$class1name',class2name='$class2name',class3name='$class3name',diff1name='$diff1name',diff2name='$diff2name',diff3name='$diff3name',diff2mod='$diff2mod',diff3mod='$diff3mod',gameopen='$gameopen',verifyemail='$verifyemail',gameurl='$gameurl',adminemail='$adminemail',shownews='$shownews',showonline='$showonline',showbabble='$showbabble' WHERE id='1' LIMIT 1", "control");
-            admindisplay("Settings updated.","Main Settings");
+            unset($_SESSION['token']);
+			admindisplay("Settings updated.","Main Settings");
         } else {
-            admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Main Settings");
+            unset($_SESSION['token']);
+			admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Main Settings");
         }
     }
     
     global $controlrow;
-    
+	
+$token = formtoken();
+	
 $page = <<<END
 <b><u>Main Settings</u></b><br />
 These options control several major settings for the overall game engine.<br /><br />
@@ -103,7 +110,8 @@ These options control several major settings for the overall game engine.<br /><
 <tr><td width="20%">Difficulty 2 Value:</td><td><input type="text" name="diff2mod" size="3" maxlength="3" value="{{diff2mod}}" /><br /><span class="small">Default is 1.2. Specify factoral value for medium difficulty here.</span></td></tr>
 <tr><td width="20%">Difficulty 3 Name:</td><td><input type="text" name="diff3name" size="20" maxlength="50" value="{{diff3name}}" /><br /></td></tr>
 <tr><td width="20%">Difficulty 3 Value:</td><td><input type="text" name="diff3mod" size="3" maxlength="3" value="{{diff3mod}}" /><br /><span class="small">Default is 1.5. Specify factoral value for hard difficulty here.</span></td></tr>
-<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
+<tr><td><input type="hidden" name="adtoken" value="{$adtoken}" /></td></tr>
+<tr><td><input type="hidden" name="token" value="{$token}" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -148,14 +156,17 @@ function items() {
 
 function edititem($id) {
 	
-    $token = admintoken();
+    $adtoken = admintoken();
 	$link = opendb();
     if (isset($_POST["submit"])) {
 		
 		$check = protectcsfr();
 		$_POST = array_map('protectarray', $_POST);
 		extract($_POST, EXTR_SKIP);
-		if ($_POST["token"] != $token) die("no csfr here");
+		if ($_POST["adtoken"] != $adtoken) die("no csfr here");
+		$token = protect($_POST['token']);
+	
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
 		
         $errors = 0;
         $errorlist = "";
@@ -168,8 +179,10 @@ function edititem($id) {
         
         if ($errors == 0) { 
             $query = doquery($link, "UPDATE {{table}} SET name='$name',type='$type',buycost='$buycost',attribute='$attribute',special='$special' WHERE id='$id' LIMIT 1", "items");
-            admindisplay("Item updated.","Edit Items");
+            unset($_SESSION['token']);
+			admindisplay("Item updated.","Edit Items");
         } else {
+			unset($_SESSION['token']);
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Items");
         }        
         
@@ -178,6 +191,8 @@ function edititem($id) {
     $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "items");
     $row = mysqli_fetch_array($query);
 
+$token = formtoken();
+	
 $page = <<<END
 <b><u>Edit Items</u></b><br /><br />
 <form action="admin.php?do=edititem:$id" method="post">
@@ -188,7 +203,8 @@ $page = <<<END
 <tr><td width="20%">Cost:</td><td><input type="text" name="buycost" size="5" maxlength="10" value="{{buycost}}" /> gold</td></tr>
 <tr><td width="20%">Attribute:</td><td><input type="text" name="attribute" size="5" maxlength="10" value="{{attribute}}" /><br /><span class="small">How much the item adds to total attackpower (weapons) or defensepower (armor/shields).</span></td></tr>
 <tr><td width="20%">Special:</td><td><input type="text" name="special" size="30" maxlength="50" value="{{special}}" /><br /><span class="small">Should be either a special code or <span class="highlight">X</span> to disable. Edit this field very carefully because mistakes to formatting or field names can create problems in the game.</span></td></tr>
-<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
+<tr><td><input type="hidden" name="adtoken" value="{$adtoken}" /></td></tr>
+<tr><td><input type="hidden" name="token" value="{$token}" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -233,7 +249,7 @@ function drops() {
 
 function editdrop($id) {
     
-	$token = admintoken();
+	$adtoken = admintoken();
 	$link = opendb();
 	
     if (isset($_POST["submit"])) {
@@ -241,7 +257,10 @@ function editdrop($id) {
 		$check = protectcsfr();
 		$_POST = array_map('protectarray', $_POST);
         extract($_POST, EXTR_SKIP);
-		if ($_POST["token"] != $token) die("no csfr here");
+		if ($_POST["adtoken"] != $adtoken) die("no csfr here");
+		$token = protect($_POST['token']);
+		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
 		
         $errors = 0;
         $errorlist = "";
@@ -253,9 +272,11 @@ function editdrop($id) {
         
         if ($errors == 0) { 
             $query = doquery($link, "UPDATE {{table}} SET name='$name',mlevel='$mlevel',attribute1='$attribute1',attribute2='$attribute2' WHERE id='$id' LIMIT 1", "drops");
-            admindisplay("Item updated.","Edit Drops");
+            unset($_SESSION['token']);
+			admindisplay("Item updated.","Edit Drops");
         } else {
-            admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Drops");
+            unset($_SESSION['token']);
+			admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Drops");
         }        
         
     }   
@@ -263,6 +284,8 @@ function editdrop($id) {
     $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "drops");
     $row = mysqli_fetch_array($query);
 
+$token = formtoken();
+	
 $page = <<<END
 <b><u>Edit Drops</u></b><br /><br />
 <form action="admin.php?do=editdrop:$id" method="post">
@@ -272,7 +295,8 @@ $page = <<<END
 <tr><td width="20%">Monster Level:</td><td><input type="text" name="mlevel" size="5" maxlength="10" value="{{mlevel}}" /><br /><span class="small">Minimum monster level that will drop this item.</span></td></tr>
 <tr><td width="20%">Attribute 1:</td><td><input type="text" name="attribute1" size="30" maxlength="50" value="{{attribute1}}" /><br /><span class="small">Must be a special code. First attribute cannot be disabled. Edit this field very carefully because mistakes to formatting or field names can create problems in the game.</span></td></tr>
 <tr><td width="20%">Attribute 2:</td><td><input type="text" name="attribute2" size="30" maxlength="50" value="{{attribute2}}" /><br /><span class="small">Should be either a special code or <span class="highlight">X</span> to disable. Edit this field very carefully because mistakes to formatting or field names can create problems in the game.</span></td></tr>
-<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
+<tr><td><input type="hidden" name="adtoken" value="{$adtoken}" /></td></tr>
+<tr><td><input type="hidden" name="token" value="{$token}" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -313,7 +337,7 @@ function towns() {
 
 function edittown($id) {
     
-	$token = admintoken();
+	$adtoken = admintoken();
 	$link = opendb();
 	
     if (isset($_POST["submit"])) {
@@ -321,7 +345,10 @@ function edittown($id) {
 		$check = protectcsfr();
 		$_POST = array_map('protectarray', $_POST);
 		extract($_POST, EXTR_SKIP);
-		if ($_POST["token"] != $token) die("no csfr here");
+		if ($_POST["adtoken"] != $adtoken) die("no csfr here");
+		$token = protect($_POST['token']);
+		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
 		
         $errors = 0;
         $errorlist = "";
@@ -341,9 +368,11 @@ function edittown($id) {
         
         if ($errors == 0) { 
             $query = doquery($link, "UPDATE {{table}} SET name='$name',latitude='$latitude',longitude='$longitude',innprice='$innprice',mapprice='$mapprice',travelpoints='$travelpoints',itemslist='$itemslist' WHERE id='$id' LIMIT 1", "towns");
-            admindisplay("Town updated.","Edit Towns");
+            unset($_SESSION['token']);
+			admindisplay("Town updated.","Edit Towns");
         } else {
-            admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Towns");
+            unset($_SESSION['token']);
+			admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Towns");
         }        
         
     }   
@@ -352,6 +381,8 @@ function edittown($id) {
     $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "towns");
     $row = mysqli_fetch_array($query);
 
+$token = formtoken();
+	
 $page = <<<END
 <b><u>Edit Towns</u></b><br /><br />
 <form action="admin.php?do=edittown:$id" method="post">
@@ -364,7 +395,8 @@ $page = <<<END
 <tr><td width="20%">Map Price:</td><td><input type="text" name="mapprice" size="5" maxlength="10" value="{{mapprice}}" /> gold<br /><span class="small">How much it costs to buy the map to this town.</span></td></tr>
 <tr><td width="20%">Travel Points:</td><td><input type="text" name="travelpoints" size="5" maxlength="10" value="{{travelpoints}}" /><br /><span class="small">How many TP are consumed when travelling to this town.</span></td></tr>
 <tr><td width="20%">Items List:</td><td><input type="text" name="itemslist" size="30" maxlength="200" value="{{itemslist}}" /><br /><span class="small">Comma-separated list of item ID numbers available for purchase at this town. (Example: <span class="highlight">1,2,3,6,9,10,13,20</span>)</span></td></tr>
-<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
+<tr><td><input type="hidden" name="adtoken" value="{$adtoken}" /></td></tr>
+<tr><td><input type="hidden" name="token" value="{$token}" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -403,14 +435,17 @@ function monsters() {
 
 function editmonster($id) {
     
-	$token = admintoken();
+	$adtoken = admintoken();
 	$link = opendb();
     if (isset($_POST["submit"])) {
         
 		$check = protectcsfr();
 		$_POST = array_map('protectarray', $_POST);
         extract($_POST, EXTR_SKIP);
-		if ($_POST["token"] != $token) die("no csfr here");
+		if ($_POST["adtoken"] != $adtoken) die("no csfr here");
+		$token = protect($_POST['token']);
+		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
 	
         $errors = 0;
         $errorlist = "";
@@ -430,9 +465,11 @@ function editmonster($id) {
         
         if ($errors == 0) { 
             $query = doquery($link, "UPDATE {{table}} SET name='$name',maxhp='$maxhp',maxdam='$maxdam',armor='$armor',level='$level',maxexp='$maxexp',maxgold='$maxgold',immune='$immune' WHERE id='$id' LIMIT 1", "monsters");
-            admindisplay("Monster updated.","Edit monsters");
+            unset($_SESSION['token']);
+			admindisplay("Monster updated.","Edit monsters");
         } else {
-            admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit monsters");
+            unset($_SESSION['token']);
+			admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit monsters");
         }        
         
     }   
@@ -441,6 +478,8 @@ function editmonster($id) {
     $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "monsters");
     $row = mysqli_fetch_array($query);
 
+$token = formtoken();
+	
 $page = <<<END
 <b><u>Edit Monsters</u></b><br /><br />
 <form action="admin.php?do=editmonster:$id" method="post">
@@ -454,7 +493,8 @@ $page = <<<END
 <tr><td width="20%">Max Experience:</td><td><input type="text" name="maxexp" size="5" maxlength="10" value="{{maxexp}}" /><br /><span class="small">Max experience gained from defeating monster.</span></td></tr>
 <tr><td width="20%">Max Gold:</td><td><input type="text" name="maxgold" size="5" maxlength="10" value="{{maxgold}}" /><br /><span class="small">Max gold gained from defeating monster.</span></td></tr>
 <tr><td width="20%">Immunity:</td><td><select name="immune"><option value="0" {{immune0select}}>None</option><option value="1" {{immune1select}}>Hurt Spells</option><option value="2" {{immune2select}}>Hurt & Sleep Spells</option></select><br /><span class="small">Some monsters may not be hurt by certain spells.</span></td></tr>
-<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
+<tr><td><input type="hidden" name="adtoken" value="{$adtoken}" /></td></tr>
+<tr><td><input type="hidden" name="token" value="{$token}" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -487,14 +527,17 @@ function spells() {
 
 function editspell($id) {
     
-	$token = admintoken();
+	$adtoken = admintoken();
 	$link = opendb();
     if (isset($_POST["submit"])) {
         
 		$check = protectcsfr();
 		$_POST = array_map('protectarray', $_POST);
         extract($_POST, EXTR_SKIP);
-		if ($_POST["token"] != $token) die("no csfr here");
+		if ($_POST["adtoken"] != $adtoken) die("no csfr here");
+		$token = protect($_POST['token']);
+		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
 
         $errors = 0;
         $errorlist = "";
@@ -506,9 +549,11 @@ function editspell($id) {
         
         if ($errors == 0) { 
             $query = doquery($link, "UPDATE {{table}} SET name='$name',mp='$mp',attribute='$attribute',type='$type' WHERE id='$id' LIMIT 1", "spells");
-            admindisplay("Spell updated.","Edit Spells");
+            unset($_SESSION['token']);
+			admindisplay("Spell updated.","Edit Spells");
         } else {
-            admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Spells");
+            unset($_SESSION['token']);
+			admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Spells");
         }        
         
     }   
@@ -517,6 +562,8 @@ function editspell($id) {
     $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "spells");
     $row = mysqli_fetch_array($query);
 
+$token = formtoken();
+	
 $page = <<<END
 <b><u>Edit Spells</u></b><br /><br />
 <form action="admin.php?do=editspell:$id" method="post">
@@ -526,7 +573,8 @@ $page = <<<END
 <tr><td width="20%">Magic Points:</td><td><input type="text" name="mp" size="5" maxlength="10" value="{{mp}}" /><br /><span class="small">MP required to cast spell.</span></td></tr>
 <tr><td width="20%">Attribute:</td><td><input type="text" name="attribute" size="5" maxlength="10" value="{{attribute}}" /><br /><span class="small">Numeric value of the spell's effect. Ties with type, below.</span></td></tr>
 <tr><td width="20%">Type:</td><td><select name="type"><option value="1" {{type1select}}>Heal</option><option value="2" {{type2select}}>Hurt</option><option value="3" {{type3select}}>Sleep</option><option value="4" {{type4select}}>Uber Attack</option><option value="5" {{type5select}}>Uber Defense</option></select><br /><span class="small">- Heal gives player back [attribute] hit points.<br />- Hurt deals [attribute] damage to monster.<br />- Sleep keeps monster from attacking ([attribute] is monster's chance out of 15 to stay asleep each turn).<br />- Uber Attack increases total attack damage by [attribute] percent.<br />- Uber Defense increases total defense from attack by [attribute] percent.</span></td></tr>
-<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
+<tr><td><input type="hidden" name="adtoken" value="{$adtoken}" /></td></tr>
+<tr><td><input type="hidden" name="token" value="{$token}" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -570,7 +618,7 @@ END;
 
 function editlevel() {
 
-	$token = admintoken();
+	$adtoken = admintoken();
 	$check = protectcsfr();
 	$link = opendb();
     if (!isset($_POST["level"])) { admindisplay("No level to edit.", "Edit Levels"); die(); }
@@ -580,7 +628,10 @@ function editlevel() {
         
 		$_POST = array_map('protectarray', $_POST);
         extract($_POST, EXTR_SKIP);
-		if ($_POST["token"] != $token) die("no csfr here");
+		if ($_POST["adtoken"] != $adtoken) die("no csfr here");
+		$token = protect($_POST['token']);
+		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
 		
         $errors = 0;
         $errorlist = "";
@@ -638,9 +689,11 @@ UPDATE {{table}} SET
 WHERE id='$id' LIMIT 1
 END;
 			$query = doquery($link, $updatequery, "levels");
-            admindisplay("Level updated.","Edit Levels");
+            unset($_SESSION['token']);
+			admindisplay("Level updated.","Edit Levels");
         } else {
-            admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Spells");
+            unset($_SESSION['token']);
+			admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Spells");
         }        
         
     }   
@@ -652,6 +705,8 @@ END;
     $class1name = $controlrow["class1name"];
     $class2name = $controlrow["class2name"];
     $class3name = $controlrow["class3name"];
+
+$token = formtoken();
 
 $page = <<<END
 <b><u>Edit Levels</u></b><br /><br />
@@ -690,7 +745,8 @@ Experience values for each level should be the cumulative total amount of experi
 <tr><td width="20%">$class3name Strength:</td><td><input type="text" name="three_strength" size="5" maxlength="5" value="{{3_strength}}" /></td></tr>
 <tr><td width="20%">$class3name Dexterity:</td><td><input type="text" name="three_dexterity" size="5" maxlength="5" value="{{3_dexterity}}" /></td></tr>
 <tr><td width="20%">$class3name Spells:</td><td><input type="text" name="three_spells" size="5" maxlength="3" value="{{3_spells}}" /></td></tr>
-<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
+<tr><td><input type="hidden" name="adtoken" value="{$adtoken}" /></td></tr>
+<tr><td><input type="hidden" name="token" value="{$token}" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -719,14 +775,17 @@ function users() {
 
 function edituser($id) {
     
-	$token = admintoken();
+	$adtoken = admintoken();
 	$link = opendb();
     if (isset($_POST["submit"])) {
        
 		$check = protectcsfr();
 		$_POST = array_map('protectarray', $_POST);
         extract ($_POST, EXTR_SKIP);
-		if ($_POST["token"] != $token) die("no csfr here");
+		if ($_POST["adtoken"] != $adtoken) die("no csfr here");
+		$token = protect($_POST['token']);
+		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
 	
         $errors = 0;
         $errorlist = "";
@@ -834,9 +893,11 @@ slot1name="$slot1name", slot2name="$slot2name", slot3name="$slot3name", dropcode
 towns="$towns" WHERE id="$id" LIMIT 1
 END;
 			$query = doquery($link, $updatequery, "users");
-            admindisplay("User updated.","Edit Users");
+            unset($_SESSION['token']);
+			admindisplay("User updated.","Edit Users");
         } else {
-            admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Users");
+            unset($_SESSION['token']);
+			admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Users");
         }        
         
     }   
@@ -851,6 +912,8 @@ END;
     $class2name = $controlrow["class2name"];
     $class3name = $controlrow["class3name"];
 
+$token = formtoken();
+	
 $page = <<<END
 <b><u>Edit Users</u></b><br /><br />
 <form action="admin.php?do=edituser:$id" method="post">
@@ -923,7 +986,8 @@ $page = <<<END
 <tr><td width="20%">Drop Code:</td><td><input type="text" name="dropcode" size="5" maxlength="8" value="{{dropcode}}" /></td></tr>
 <tr><td width="20%">Spells:</td><td><input type="text" name="spells" size="50" maxlength="50" value="{{spells}}" /></td></tr>
 <tr><td width="20%">Towns:</td><td><input type="text" name="towns" size="50" maxlength="50" value="{{towns}}" /></td></tr>
-<tr><td><input type="hidden" name="token" value="$token" /></td></tr>
+<tr><td><input type="hidden" name="adtoken" value="{$adtoken}" /></td></tr>
+<tr><td><input type="hidden" name="token" value="{$token}" /></td></tr>
 </table>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
@@ -946,33 +1010,41 @@ END;
 
 function addnews() {
     
-	$token = admintoken();
+	$adtoken = admintoken();
 	$link = opendb();
     if (isset($_POST["submit"])) {
         
 		$check = protectcsfr();
 		$content = protect($_POST['content']);
+		$adtoken = protect($_POST['adtoken']);
 		$token = protect($_POST['token']);
-		if ($_POST["token"] != $token) die("no csfr here");
+		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
+		if ($_POST["adtoken"] != $adtoken) die("no csfr here");
         $errors = 0;
         $errorlist = "";
         if ($content == "") { $errors++; $errorlist .= "Content is required.<br />"; }
         
         if ($errors == 0) { 
             $query = doquery($link, "INSERT INTO {{table}} SET id='',postdate=NOW(),content='$content'", "news");
-            admindisplay("News post added.","Add News");
+            unset($_SESSION['token']);
+			admindisplay("News post added.","Add News");
         } else {
-            admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Add News");
+            unset($_SESSION['token']);
+			admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Add News");
         }        
         
     }   
+	
+$token = formtoken();
         
 $page = <<<END
 <b><u>Add A News Post</u></b><br /><br />
 <form action="admin.php?do=news" method="post">
 Type your post below and then click Submit to add it.<br />
 <textarea name="content" rows="5" cols="50"></textarea><br />
-<input type="hidden" name="token" value="$token" />
+<tr><td><input type="hidden" name="adtoken" value="{$adtoken}" /></td></tr>
+<tr><td><input type="hidden" name="token" value="{$token}" /></td></tr>
 <input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
 </form>
 END;

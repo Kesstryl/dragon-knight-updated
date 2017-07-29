@@ -1,5 +1,7 @@
 <?php // lib.php :: Common functions used throughout the program.
 
+session_start();
+
 $starttime = getmicrotime();
 $numqueries = 0;
 $version = "1.1.12";
@@ -103,6 +105,16 @@ function admintoken() {
 	return $checktoken;
 }
 
+function formtoken() {
+	if (!isset($_SESSION['token'])) {
+    $sesstoken = sha1(uniqid(rand(), TRUE));
+    $_SESSION['token'] = $sesstoken;
+	}else{
+    $sesstoken = $_SESSION['token'];
+	}
+	return $sesstoken;
+}
+
 function gettemplate($templatename) { // SQL query for the template.
 
     $filename = "templates/" . $templatename . ".php";
@@ -194,7 +206,7 @@ function display($content, $title, $topnav=true, $leftnav=true, $rightnav=true, 
     
     global $numqueries, $userrow, $controlrow, $version, $build;
 		
-		$check = protectcsfr();;
+	$check = protectcsfr();;
 	$link = opendb();
     if (!isset($controlrow)) {
         $controlquery = doquery($link, "SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");

@@ -1,6 +1,9 @@
 Dragon Knight
 Changelog
 
+To Do 
+Add a session token which can be read on forms from the cookies
+
 Dragon Knight 1.1.12  (06.29.2017) by Kesstryl
 All changes to vanilla code were done to increase security and make code php5 compatible.
 Security changes are only bare minimum, add your own to increase security, or use at your own risk.
@@ -11,7 +14,10 @@ php5 code upgrades
 Security changes
 - changed cookies to use a hash code which is changed at every login.
 - set cookies to http only.
+- changed cookies to last for one week instead of one year to force new cookie tokens and reduce chances of session hijacking.
 - added htaccess files in all folders to prevent directory snooping.
+- added a session token that is accessible from the database so user is not logged out until cookie expires.
+- added http_user_agent to sessions to check that every cookie request comes from the same user.
 - added a function to check for host url to protect against csfr wherever POST and GET are used. This will throw an error if logged in through cookies and not the login form, but the error goes away once you do something.
 - added a token hidden field in POST forms in admin panel to protect against csfr.
 - changed admin.php to go back to the index page if unauthorized to use the admin panel.

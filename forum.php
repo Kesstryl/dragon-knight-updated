@@ -72,8 +72,10 @@ function showthread($id, $start) {
             $count = 1;
         }
     }
+	
+	$token = formtoken();
     $page .= "</table></td></tr></table><br />";
-    $page .= "<table width=\"100%\"><tr><td><b>Reply To This Thread:</b><br /><form action=\"forum.php?do=reply\" method=\"post\"><input type=\"hidden\" name=\"parent\" value=\"$id\" /><input type=\"hidden\" name=\"title\" value=\"Re: ".$row2["title"]."\" /><textarea name=\"content\" rows=\"7\" cols=\"40\"></textarea><br /><input type=\"submit\" name=\"submit\" value=\"Submit\" /> <input type=\"reset\" name=\"reset\" value=\"Reset\" /></form></td></tr></table>";
+    $page .= "<table width=\"100%\"><tr><td><b>Reply To This Thread:</b><br /><form action=\"forum.php?do=reply\" method=\"post\"><input type=\"hidden\" name=\"parent\" value=\"$id\" /><input type=\"hidden\" name=\"title\" value=\"Re: ".$row2["title"]."\" /><textarea name=\"content\" rows=\"7\" cols=\"40\"></textarea><br /><input type=\"submit\" name=\"submit\" value=\"Submit\" /> <input type=\"reset\" name=\"reset\" value=\"Reset\" /><input type=\"hidden\" name=\"token\" value=\"$token\" /></form></td></tr></table>";
     
     display($page, "Forum");
     
@@ -85,9 +87,13 @@ function reply() {
 	$check = protectcsfr();
 	$link = opendb();
 	$content = protect($_POST['content']);
-	$parent = protect($POST['parent']);
+	$parent = protect($_POST['parent']);
+	$token = protect($_POST['token']);
+		
+	if ($_SESSION['token'] != $token) { die("Invalid request");}
 	$query = doquery($link, "INSERT INTO {{table}} SET id='',postdate=NOW(),newpostdate=NOW(),author='".$userrow["charname"]."',parent='$parent',replies='0',title='$title',content='$content'", "forum");
 	$query2 = doquery($link, "UPDATE {{table}} SET newpostdate=NOW(),replies=replies+1 WHERE id='$parent' LIMIT 1", "forum");
+	unset($_SESSION['token']);
 	header("Location: forum.php?do=thread:$parent:0");
 	die();
 	
@@ -101,12 +107,17 @@ function newthread() {
     if (isset($_POST["submit"])) {
 		$title = protect($_POST['title']);
 		$content = protect($_POST['content']);
+		$token = protect($_POST['token']);
+		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
         $query = doquery($link, "INSERT INTO {{table}} SET id='',postdate=NOW(),newpostdate=NOW(),author='".$userrow["charname"]."',parent='0',replies='0',title='$title',content='$content'", "forum");
-        header("Location: forum.php");
+        unset($_SESSION['token']);
+		header("Location: forum.php");
         die();
     }
-    
-    $page = "<table width=\"100%\"><tr><td><b>Make A New Post:</b><br /><br/ ><form action=\"forum.php?do=new\" method=\"post\">Title:<br /><input type=\"text\" name=\"title\" size=\"50\" maxlength=\"50\" /><br /><br />Message:<br /><textarea name=\"content\" rows=\"7\" cols=\"40\"></textarea><br /><br /><input type=\"submit\" name=\"submit\" value=\"Submit\" /> <input type=\"reset\" name=\"reset\" value=\"Reset\" /></form></td></tr></table>";
+	
+    $token = formtoken();
+    $page = "<table width=\"100%\"><tr><td><b>Make A New Post:</b><br /><br/ ><form action=\"forum.php?do=new\" method=\"post\">Title:<br /><input type=\"text\" name=\"title\" size=\"50\" maxlength=\"50\" /><br /><br />Message:<br /><textarea name=\"content\" rows=\"7\" cols=\"40\"></textarea><br /><br /><input type=\"submit\" name=\"submit\" value=\"Submit\" /> <input type=\"reset\" name=\"reset\" value=\"Reset\" /><input type=\"hidden\" name=\"token\" value=\"{$token}\" /></form></td></tr></table>";
     display($page, "Forum");
     
 }

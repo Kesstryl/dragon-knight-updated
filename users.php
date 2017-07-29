@@ -34,7 +34,9 @@ function register() { // Register a new account.
 		$charclass = protect($_POST['charclass']);
 		$difficulty = protect($_POST['difficulty']);
 		$birthday = protect($_POST['birthday']);
+		$token = protect($_POST['token']);
 		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
 		if ($birthday != (string) NULL) die ("spammers are not welcome here");
         // Process username.
         if ($username == "") { $errors++; $errorlist .= "Username field is required.<br />"; }
@@ -75,7 +77,7 @@ function register() { // Register a new account.
             }
             
             $query = doquery($link, "INSERT INTO {{table}} SET id='',regdate=NOW(),verify='$verifycode',username='$username',password='$password',email='$email1',charname='$charname',charclass='$charclass',difficulty='$difficulty'", "users") or die(mysql_error());
-            
+            unset($_SESSION['token']);
             if ($controlrow["verifyemail"] == 1) {
                 if (sendregmail($email1, $verifycode) == true) {
                     $page = "Your account was created successfully.<br /><br />You should receive an Account Verification email shortly. You will need the verification code contained in that email before you are allowed to log in. Once you have received the email, please visit the <a href=\"users.php?do=verify\">Verification Page</a> to enter your code and start playing.";
@@ -88,12 +90,14 @@ function register() { // Register a new account.
             
         } else {
             
+			unset($_SESSION['token']);
             $page = "The following error(s) occurred when your account was being made:<br /><span style=\"color:red;\">$errorlist</span><br />Please go back and try again.";
             
         }
         
     } else {
         
+		unset($_SESSION['token']);
         $page = gettemplate("register");
         if ($controlrow["verifyemail"] == 1) { 
             $controlrow["verifytext"] = "<br /><span class=\"small\">A verification code will be sent to the address above, and you will not be able to log in without first entering the code. Please be sure to enter your correct email address.</span>";
@@ -119,7 +123,9 @@ function verify() {
 		$email = protect($_POST['email']);
 		$verify = protect($_POST['verify']);
 		$birthday = protect($_POST['birthday']);
+		$token = protect($_POST['token']);
 		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
         $userquery = doquery($link, "SELECT username,email,verify FROM {{table}} WHERE username='$username' LIMIT 1","users");
         if (mysqli_num_rows($userquery) != 1) { die("No account with that username."); }
         $userrow = mysqli_fetch_array($userquery);
@@ -129,6 +135,7 @@ function verify() {
 		if ($birthday != "") { $errors++; $errorlist .= "Spammers are not allowed.<br />"; }
         // If we've made it this far, should be safe to update their account.
         $updatequery = doquery($link, "UPDATE {{table}} SET verify='1' WHERE username='$username' LIMIT 1","users");
+		unset($_SESSION['token']);
         display("Your account was verified successfully.<br /><br />You may now continue to the <a href=\"login.php?do=login\">Login Page</a> and start playing the game.<br /><br />Thanks for playing!","Verify Email",false,false,false);
     }
     $page = gettemplate("verify");
@@ -146,6 +153,9 @@ function lostpassword() {
 		$email = protect($_POST['email']);
         $password1 = protect($_POST['password1']);
 		$password2 = protect($_POST['password2']);
+		$token = protect($_POST['token']);
+		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
         $userquery = doquery($link, "SELECT email FROM {{table}} WHERE email='$email' LIMIT 1","users");
         if (mysqli_num_rows($userquery) != 1) { die("No account with that email address."); }
         $newpass = "";
@@ -155,7 +165,8 @@ function lostpassword() {
 		$salt = $username;
         $md5newpass = hash('sha256', $salt.$newpass);
         $updatequery = doquery($link, "UPDATE {{table}} SET password='$md5newpass' WHERE email='$email' LIMIT 1","users");
-        $email = <<<END
+        unset($_SESSION['token']);
+		$email = <<<END
 You or someone using your email address submitted a Lost Password application on the $gamename server, located at $gameurl. 
 
 We have issued you a new password so you can log back into the game.
@@ -186,12 +197,15 @@ function changepassword() {
     if (isset($_POST["submit"])) {
 		
 		$check = protectcsfr();
+		
 		$link = opendb();
 		$username = protect($_POST['username']);
         $oldpass = protect($_POST['oldpass']);
 		$newpass1 = protect($_POST['newpass1']);
 		$newpass2 = protect($_POST['newpass2']);
+		$token = protect($_POST['token']);
 		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
         $userquery = doquery($link, "SELECT * FROM {{table}} WHERE username='$username' LIMIT 1","users");
         if (mysqli_num_rows($userquery) != 1) { die("No account with that username."); }
         $userrow = mysqli_fetch_array($userquery);
@@ -204,7 +218,8 @@ function changepassword() {
         if (isset($_COOKIE["dkgame"])) { setcookie("dkgame", "", time()-100000, "/", "", 0, true); }
         display("Your password was changed successfully.<br /><br />You have been logged out of the game to avoid cookie errors.<br /><br />Please <a href=\"login.php?do=login\">log back in</a> to continue playing.","Change Password",false,false,false);
         die();
-    }
+		unset($_SESSION['token']);
+		}
     $page = gettemplate("changepassword");
     $topnav = "<a href=\"login.php?do=login\"><img src=\"images/button_login.gif\" alt=\"Log In\" border=\"0\" /></a><a href=\"users.php?do=register\"><img src=\"images/button_register.gif\" alt=\"Register\" border=\"0\" /></a><a href=\"help.php\"><img src=\"images/button_help.gif\" alt=\"Help\" border=\"0\" /></a>";
     display($page, "Change Password", false, false, false); 
