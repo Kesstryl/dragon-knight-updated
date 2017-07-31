@@ -127,7 +127,9 @@ function buy2($id) { // Confirm user's intent to purchase item.
 
 function buy3($id) { // Update user profile with new item & stats.
     
-    if (isset($_POST["cancel"])) { header("Location: index.php"); die(); }
+    if (isset($_POST["cancel"])) { 
+    $_POST = protect($_POST["cancel"]);
+	header("Location: index.php"); die(); }
     
     global $userrow;
 	$check = protectcsfr();
@@ -332,7 +334,9 @@ function maps2($id) { // Confirm user's intent to purchase map.
 
 function maps3($id) { // Add new map to user's profile.
     
-    if (isset($_POST["cancel"])) { header("Location: index.php"); die(); }
+    if (isset($_POST["cancel"])) { 
+    $_POST = protect($_POST["cancel"]);
+	header("Location: index.php"); die(); }
     
     global $userrow, $numqueries;
 	$check = protectcsfr();
