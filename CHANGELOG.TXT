@@ -1,8 +1,6 @@
 Dragon Knight
 Changelog
 
-To Do 
-Add a session token which can be read on forms from the cookies
 
 Dragon Knight 1.1.12  (06.29.2017) by Kesstryl
 All changes to vanilla code were done to increase security and make code php5 compatible.
