@@ -1,0 +1,688 @@
+Dragon Knight Quest Creator 1.0 by Trav (travman75@hotmail.com) -- 03/11/2008
+updated by Kesstryl to mysqli and added security functions --07/31/2017
+
+I recently discovered Dragon Knight, and this is my first release.  Take it easy on me! :)
+I am relatively new to PHP, but I know other languages so I can catch on pretty quickly.
+
+With that being said, if you discover any bugs or have any problems or suggestions, feel free 
+to email me at the above address.  The scripts included include admin scripts to edit and create
+new quests, and there are instructions to help you on these screens.  I also have included
+3 sample quests to give you an idea how it works.  The sample quests start off in the starter
+town of Dragon Knight, and they are really short.  I suggest you go through them to get
+an understanding how the quest system works.  
+
+Alright, let's get to the instructions.  It's not terribly complicated, but there is a decent 
+amount of code to add.  I'd suggest making backups of your exising files before proceeding.
+
+OK, let's get started...
+
+
+
+******************************************
+Open explore.php and find the code below:
+******************************************
+
+$townquery = doquery($link, "SELECT id FROM {{table}} WHERE latitude='$latitude' AND longitude='$longitude' LIMIT 1", "towns");
+if (mysqli_num_rows($townquery) > 0) {
+    $townrow = mysqli_fetch_array($townquery);
+    include('towns.php');
+    travelto($townrow["id"], false);
+    die();
+}
+
+*****************
+After that, add:
+*****************
+
+    $questquery = doquery($link, "SELECT quest_id FROM {{table}} WHERE latitude='$latitude' AND longitude='$longitude' AND user_id='".$userrow["id"]."' AND status='0' LIMIT 1", "questprogress");
+    if (mysqli_num_rows($questquery) > 0) {
+
+        $quest = mysqli_fetch_array($questquery);
+        $action = "currentaction='Quest Event',";
+        $updatequery = doquery($link, "UPDATE {{table}} SET currentaction='Quest Event', currentquestid = '".$quest["quest_id"]."', currentfight='1', latitude='$latitude', longitude='$longitude', dropcode='0' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+	  header("Location: index.php");
+        die();
+    }
+
+
+
+******************************************
+Open lib.php and find the code below:
+******************************************
+
+function doquery($query, $table) { // Something of a tiny little database abstraction layer.
+    
+    include('config.php');
+    global $numqueries;
+    $sqlquery = mysql_query(str_replace("{{table}}", $dbsettings["prefix"] . "_" . $table, $query)) or die(mysql_error());
+    $numqueries++;
+    return $sqlquery;
+
+}
+
+****************
+After that, add:
+****************
+
+function doquery2($link, $query, $table1, $table2) { // Something of a tiny little database abstraction layer.
+    
+    include('config.php');
+    global $numqueries;
+	$link = opendb();
+    //$sqlquery = mysqli_query($link, str_replace("{{table}}", $dbsettings["prefix"] . "_" . $table, $query)) or die(mysql_error());
+    $endquery = str_replace("{{table1}}", $dbsettings["prefix"] . "_" . $table1, $query);
+    $endquery = str_replace("{{table2}}", $dbsettings["prefix"] . "_" . $table2, $endquery);
+    $sqlquery = mysqli_query($link, $endquery) or die(mysql_error());
+    $numqueries++;
+    return $sqlquery;
+
+}
+
+function isNaN( $var ) {
+	return !preg_match ("~^[-]?[0-9]+([\.][0-9]+)?$~", $var);
+}
+
+
+
+******************************************
+Open towns.php and find the code below:
+******************************************
+
+function travelto($id, $usepoints=true) { // Send a user to a town from the Travel To menu.
+    
+    global $userrow, $numqueries;
+    
+    if ($userrow["currentaction"] == "Fighting") { header("Location: index.php?do=fight"); die(); }
+
+****************
+After that, add:
+****************
+
+if ($userrow["currentaction"] == "Quest Event") { header("Location: index.php?do=quest"); die(); }
+
+
+
+******************************************
+Open index.php and find the code below:
+******************************************
+
+    // Fighting functions.
+    elseif ($do[0] == "fight") { include('fight.php'); fight(); }
+    elseif ($do[0] == "victory") { include('fight.php'); victory(); }
+    elseif ($do[0] == "drop") { include('fight.php'); drop(); }
+    elseif ($do[0] == "dead") { include('fight.php'); dead(); }
+
+****************
+After that, add:
+****************
+
+    // Questing functions.
+    elseif ($do[0] == "quest") { include('quest.php'); quest(); }
+    elseif ($do[0] == "questvictory") { include('quest.php'); questvictory(); }
+    elseif ($do[0] == "questdrop") { include('quest.php'); questdrop(); }
+    elseif ($do[0] == "getquests") { include('quests_available.php'); displayQuests(); }
+    elseif ($do[0] == "viewquest") { include('quests_available.php'); viewQuest(); }
+    elseif ($do[0] == "acceptquest") { include('quests_available.php'); acceptQuest(); }
+    elseif ($do[0] == "questlog") { questLog(); }
+    elseif ($do[0] == "showquest") { showQuestLog(); }
+
+
+	
+******************************************
+Still in index.php, find the code below:
+******************************************
+
+function donothing() {
+    
+    global $userrow;
+
+    if ($userrow["currentaction"] == "In Town") {
+        $page = dotown();
+        $title = "In Town";
+    } elseif ($userrow["currentaction"] == "Exploring") {
+        $page = doexplore();
+        $title = "Exploring";
+    } elseif ($userrow["currentaction"] == "Fighting")  {
+        $page = dofight();
+        $title = "Fighting";
+    }
+    
+    display($page, $title);
+    
+}
+
+***********************
+REPLACE that with this:
+***********************
+
+function donothing() {
+    
+    global $userrow, $page, $title;
+
+    if ($userrow["currentaction"] == "In Town") {
+        $page = dotown();
+        $title = "In Town";
+    } elseif ($userrow["currentaction"] == "Exploring") {
+        $page = doexplore();
+        $title = "Exploring";
+    } elseif ($userrow["currentaction"] == "Fighting")  {
+        $page = dofight();
+        $title = "Fighting";
+    } elseif ($userrow["currentaction"] == "Quest Event") {
+        $page = doquest();
+        $title = "Quest Event";
+    }
+    
+    display($page, $title);
+    
+}
+
+
+
+******************************************
+Still in index.php, find the code below:
+******************************************
+
+function dofight() { // Redirect to fighting.
+    
+    header("Location: index.php?do=fight");
+    
+}
+
+******************************
+After that, add this big chunk of code:
+******************************
+
+function doquest() { // Redirect to questing.
+    
+    header("Location: index.php?do=quest");
+    
+}
+
+function questLog() {
+
+	global $userrow;
+	$check = protectcsfr();
+	$link = opendb();
+	$query = doquery2($link, "SELECT DISTINCT a.id,a.name FROM {{table1}} a, {{table2}} b WHERE user_id = '".$userrow["id"]."' AND status = '0' AND a.id = b.quest_id","quests","questprogress");
+	$rows = mysqli_num_rows($query);
+	$page = "<center><table width='200'><tr><td class='title'><center>Quest Log</center></td></tr>";
+	$page .= "<tr><td><center>";
+	if ($rows == 0)
+	{
+		$page .= "Your quest log is currently empty.";
+	} else {
+
+		while($log = mysqli_fetch_assoc($query))
+		{
+			$name = $log["name"];
+			$id = $log["id"];
+			$page .= "<li><a href=\"index.php?do=showquest&id=" . $id . "\">" . $name . "</a></li>";
+		}
+	}
+	$page .= "</center></td></tr></table></center>";
+	$pagearray = array();
+	$pagearray["content"] = $page;
+	$pagearray["title"] = "Quest Log";
+      
+	// Finalize page and display it.
+   	$template = gettemplate("minimal");
+    	echo parsetemplate($template,$pagearray);
+      die();
+}
+
+function showQuestLog()
+{
+	global $userrow;
+
+	$page = "<center><table width='200'><tr><td class='title'><center>Quest Info</center></td></tr>";
+	$page .= "<tr><td><center>";
+
+
+	// make sure an id was passed in
+	if (!isset($_GET["id"])) {
+		$page .= "No id passed in!";
+	}
+	else
+	{
+		$check = protectcsfr();
+		$link = opendb();
+		$_GET = array_map('protectarray', $_GET);
+		$questid = explode(":",$_GET["id"]);
+		$id = $questid[0];
+
+		// make sure id passed in is valid
+		if (isNaN($id))
+		{
+			$page .= "Invalid ID passed in!";
+		}
+		else
+		{
+
+			// make sure player is on this quest...
+			$query = doquery($link, "SELECT * FROM {{table}} WHERE user_id = '" .$userrow["id"]. "' AND quest_id = '" .$id. "' LIMIT 1","questprogress");
+			if (mysqli_num_rows($query) != 1)
+			{
+				$page .= "You are not eligible to view the quest you have requested.";
+			}
+			else
+			{
+				// get quest info 
+				$questresult = doquery($link, "SELECT * FROM {{table}} WHERE id = '" .$id. "' LIMIT 1","quests");
+				if (mysqli_num_rows($questresult) != 1)
+				{
+					$page .= "Error looking up quest info!";
+				}
+				else
+				{
+					$questrow = mysqli_fetch_array($questresult);
+					$name = $questrow["name"];
+					$text = nl2br($questrow["begin_text"]);
+					$rewardexp = $questrow["reward_exp"];
+					$rewardgold = $questrow["reward_gold"];
+					$dropid = $questrow["drop_id"];
+					$dropname = "";
+					$dropbonus1 = "";
+					$dropbonus2 = "";
+					$dropinfo = "";
+
+					if ($dropid != 0)
+					{
+						$dropquery = doquery($link, "SELECT * FROM {{table}} WHERE id = '" . $dropid . "'","drops");
+						$droprow = mysqli_fetch_array($dropquery);
+		
+						$attributearray = array("maxhp"=>"Max HP",
+                            						"maxmp"=>"Max MP",
+                            						"maxtp"=>"Max TP",
+                            						"defensepower"=>"Defense Power",
+                            						"attackpower"=>"Attack Power",
+                            						"strength"=>"Strength",
+                            						"dexterity"=>"Dexterity",
+                            						"expbonus"=>"Experience Bonus",
+                            						"goldbonus"=>"Gold Bonus");
+
+
+						$attribute1 = explode(",",$droprow["attribute1"]);
+    						$dropbonus1 = $attributearray[$attribute1[0]] . " ";
+   						if ($attribute1[1] > 0) { $dropbonus1 .= "+" . $attribute1[1]; } else { $dropbonus1 .= $attribute1[1]; }
+						if ($droprow["attribute2"] != "X") { 
+        						$attribute2 = explode(",",$droprow["attribute2"]);
+        						$dropbonus2 = $attributearray[$attribute2[0]] . " ";
+        						if ($attribute2[1] > 0) { $dropbonus2 .= "+" . $attribute2[1]; } else { $dropbonus2 .= $attribute2[1]; }
+    						}		
+						$dropname = $droprow["name"];
+
+						$dropinfo = $droprow["name"] . ": " . $dropbonus1;
+						if ($dropbonus2 != "")
+						{
+							$dropinfo .= ", ".$dropbonus2;
+						}
+					}
+
+					$page .= "<table width=\"100%\">";
+					$page .= "<tr><td align=\"center\"><b>" .$name. "</b><br /></td></tr>";
+					$page .= "<tr><td align=\"left\">" .$text. "<br /></td></tr>";
+					$page .= "<tr><td align=\"center\"><b>Rewards</b><br /></td></tr>";
+					$page .= "<tr><td align=\"center\">" .$rewardexp. " Experience</td></tr>";
+					$page .= "<tr><td align=\"center\">" .$rewardgold. " Gold</td></tr>";
+					if ($dropname != "")
+					{
+						$page .= "<tr><td align=\"center\">You will also receive:<br />" .$dropname. "<br /></td></tr>";
+						$page .= "<tr><td align=\"center\">Stats granted by this item:<br />" .$dropbonus1;
+						if ($dropbonus2 != "")
+						{
+							$page .= "<br />".$dropbonus2."<br/>";
+						}
+						$page .= "</td></tr>";
+					}
+					$page .= "</table>";					
+				}
+			}
+		}
+	}
+	$page .= "</center></td></tr></table><a href='index.php?do=questlog'>Back to Quest Log</a></center>";
+	$pagearray = array();
+	$pagearray["content"] = $page;
+	$pagearray["title"] = "Quest Log";
+      
+	// Finalize page and display it.
+   	$template = gettemplate("minimal");
+    	echo parsetemplate($template,$pagearray);
+      die();
+}
+
+
+******************************************
+Open heal.php and find the code below:
+******************************************
+
+    if ($userrow["currentaction"] == "Fighting") { display("You cannot use the Quick Spells list during a fight. Please go back and select the Healing Spell you wish to use from the Spells box on the main fighting screen to continue.", "Error"); die(); }
+    if ($userrow["currenthp"] == $userrow["maxhp"]) { display("Your Hit Points are already full. You don't need to use a Healing spell now.", "Error"); die(); }
+
+***********************
+REPLACE that with this:
+***********************
+
+    if ($userrow["currentaction"] == "Fighting") { display("You cannot use the Quick Spells list during a fight. Please go back and select the Healing Spell you wish to use from the Spells box on the main fighting screen to continue.", "Error"); die(); }
+    if ($userrow["currentaction"] == "Quest Event") { display("You cannot use the Quick Spells list during a fight. Please go back and select the Healing Spell you wish to use from the Spells box on the main fighting screen to continue.", "Error"); die(); }
+    if ($userrow["currenthp"] == $userrow["maxhp"]) { display("Your Hit Points are already full. You don't need to use a Healing spell now.", "Error"); die(); }
+
+
+
+******************************************
+Open admin.php and find the code below:
+******************************************
+
+    elseif ($do[0] == "news") { addnews(); }
+
+*********************
+After that, add this:
+*********************
+
+    elseif ($do[0] == "quests") { quests(); }
+    elseif ($do[0] == "editquest") { editquest($do[1]); }
+    elseif ($do[0] == "addquest") { addquest(); }
+
+
+
+******************************************
+Still in admin.php, find the code below:
+******************************************
+
+END;
+    
+    $page = parsetemplate($page, $row);
+    admindisplay($page, "Edit Towns");
+    
+}
+
+*******************************
+After that, add this big chunk:
+*******************************
+
+function quests() {
+
+    $check = protectcsfr();
+	$link = opendb();
+    $query = doquery($link, "SELECT id,name FROM {{table}} ORDER BY id", "quests");
+    $page = "<b><u>Edit Quests</u></b><br />Click a quest's name to edit it.<br /><br /><table width=\"50%\">\n";
+    $count = 1;
+    while ($row = mysqli_fetch_array($query)) {
+        if ($count == 1) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">".$row["id"]."</td><td style=\"background-color: #eeeeee;\"><a href=\"admin.php?do=editquest:".$row["id"]."\">".$row["name"]."</a></td></tr>\n"; $count = 2; }
+        else { $page .= "<tr><td width=\"8%\" style=\"background-color: #ffffff;\">".$row["id"]."</td><td style=\"background-color: #ffffff;\"><a href=\"admin.php?do=editquest:".$row["id"]."\">".$row["name"]."</a></td></tr>\n"; $count = 1; }
+    }
+    if (mysqli_num_rows($query) == 0) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">No quests found.</td></tr>\n"; }
+    $page .= "</table>";
+    admindisplay($page, "Edit Quests");
+    
+}
+
+function editquest($id) {
+    
+	$adtoken = admintoken();
+	$link = opendb();
+    if (isset($_POST["submit"])) {
+        
+		$check = protectcsfr();
+		$_POST = array_map('protectarray', $_POST);
+        extract($_POST);
+		if ($_POST["adtoken"] != $adtoken) die("no csfr here");
+		$token = protect($_POST['token']);
+		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
+		
+        $errors = 0;
+        $errorlist = "";
+        if ($name == "") { $errors++; $errorlist .= "Name is required.<br />"; }
+	  if ($townid == "") { $errors++; $errorlist .= "Town ID is required.<br />"; }
+	  if (!is_numeric($townid)) { $errors++; $errorlist .= "Town ID must be a number.<br />"; }
+	  if ($minlevel == "") { $errors++; $errorlist .= "Minimum level is required.<br />"; }
+	  if (!is_numeric($minlevel)) { $errors++; $errorlist .= "Minimum Level must be a number.<br />"; }
+	  if ($maxlevel == "") { $errors++; $errorlist .= "Maximum level is required.<br />"; }
+	  if (!is_numeric($maxlevel)) { $errors++; $errorlist .= "Maximum Level must be a number.<br />"; }
+	  if (is_numeric($minlevel) && is_numeric($maxlevel) && $minlevel > $maxlevel) { $errors++; $errorlist .= "Maximum level must be greater than or equal to minimum level.<br />"; }
+        if ($questtype == "") { $errors++; $errorlist .= "Quest Type is required.<br />"; }
+	  if (!is_numeric($questtype)) { $errors++; $errorlist .= "Quest Type must be 0 or 1.<br />"; }
+	  if (is_numeric($questtype) && ($questtype < 0 || $questtype > 1)) { $errors++; $errorlist .= "Quest Type must be 0 or 1.<br />"; } 
+        if ($monsterid == "") { $errors++; $errorlist .= "Monster ID is required.<br />"; }
+        if (!is_numeric($monsterid)) { $errors++; $errorlist .= "Monster ID must be numeric.<br />"; }
+	  if ($preid == "") { $errors++; $errorlist .= "Pre ID is required.<br />"; }
+	  if (!is_numeric($preid)) { $errors++; $errorlist .= "Pre ID must be numeric.<br />"; }
+	  if ($starttext == "") { $errors++; $errorlist .= "Start text is required.<br />"; }
+	  if ($endtext == "") { $errors++; $errorlist .= "End text is required.<br />"; }
+	  if ($latitude == "") { $errors++; $errorlist .= "Latitude is required.<br />"; }
+	  if (!is_numeric($latitude)) { $errors++; $errorlist .= "Latitude must be numeric.<br />"; }
+	  if ($longitude == "") { $errors++; $errorlist .= "Longitude is required.<br />"; }
+	  if (!is_numeric($longitude)) { $errors++; $errorlist .= "Longitude must be numeric.<br />"; }
+	  if ($experience == "") { $errors++; $errorlist .= "Experience is required.<br />"; }
+	  if (!is_numeric($experience)) { $errors++; $errorlist .= "Experience must be numeric.<br />"; }
+	  if ($gold == "") { $errors++; $errorlist .= "Gold is required.<br />"; }
+	  if (!is_numeric($gold)) { $errors++; $errorlist .= "Gold must be numeric.<br />"; }
+	  if ($dropid == "") { $errors++; $errorlist .= "Drop ID is required.<br />"; }
+	  if (!is_numeric($dropid)) { $errors++; $errorlist .= "Drop ID must be numeric.<br />"; }
+	  
+        
+	  if ($errors == 0) { 
+            $query = doquery($link, "UPDATE {{table}} SET name='" .$name. "',town_id='" .$townid. "',min_level='" .$minlevel. "',max_level='" .$maxlevel. "',quest_type='" .$questtype. "',monster_id='" .$monsterid. "',pre_id='" .$preid. "',begin_text='" .$starttext. "',end_text='" .$endtext. "',objective_lat='" .$latitude. "',objective_long='" .$longitude. "',reward_exp='" .$experience. "',reward_gold='" .$gold. "',drop_id='" .$dropid. "' WHERE id='$id' LIMIT 1", "quests");
+            admindisplay("Quest updated.","Edit Quests");
+        } else {
+            admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Towns");
+        }        
+        
+    }   
+        
+    
+    $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "quests");
+    $row = mysqli_fetch_array($query);
+
+
+$token = formtoken();
+	
+$page = <<<END
+<b><u>Edit Quests</u></b><br /><br />
+<form action="admin.php?do=editquest:$id" method="post">
+<table width="90%">
+<tr><td width="20%">ID:</td><td>{{id}}</td></tr>
+<tr><td width="20%">Name:</td><td><input type="text" name="name" size="30" maxlength="50" value="{{name}}" /><br Name of the quest.</span></td></tr>
+<tr><td width="20%">Town ID:</td><td><input type="text" name="townid" size="5" maxlength="3" value="{{town_id}}" /><br /><span class="small">This is the id of the town where the quest will appear.  If you give an id which doesn't exist, the quest will never show up.</span></td></tr>
+<tr><td width="20%">Minimum Level:</td><td><input type="text" name="minlevel" size="5" maxlength="5" value="{{min_level}}" /><br /><span class="small">This is the earliest level the quest can be picked up.</span></td></tr>
+<tr><td width="20%">Maximum Level:</td><td><input type="text" name="maxlevel" size="5" maxlength="5" value="{{max_level}}" /><br /><span class="small">This is the latest level the quest can be picked up.  If a user picks up this quest and then levels past this level, they will still be able to complete it.</span></td></tr>
+<tr><td width="20%">Quest Type:</td><td><input type="text" name="questtype" size="5" maxlength="1" value="{{quest_type}}" /><br /><span class="small">Set this to 0 for a 'fetch' quest where the user simply must arrive at the area you specify, or set this to 1 for a 'kill' quest where a user will fight a monster at the area you specify.</span></td></tr> 
+<tr><td width="20%">Monster ID:</td><td><input type="text" name="monsterid" size="5" maxlength="5" value="{{monster_id}}" /><br /><span class="small">If quest type is set to 1 for a 'kill' quest, then this is the id of the monster that must be beaten to finish the quest.</span></td></tr>
+<tr><td width="20%">Previous Quest ID:</td><td><input type="text" name="preid" size="5" maxlength="5" value="{{pre_id}}" /><br /><span class="small">This is for creating quest chains.  Set this to 0 if no previous quest must be completed for this quest to show up, or set it to the ID of the quest that must first be completed before this quest can be gotten.  For example, if you have two quests you want to chain together, set the first quest's Previous Quest ID to 0, and set the second quest's Previous Quest ID to the ID of the first quest.  Note that you still must be conscious of quest min/max levels when creating quest chains.  If the second quest in a chain has a maximum level lower than the first quest's minimum level, it will never show up!</span></td></tr>
+<tr><td width="20%">Latitude:</td><td><input type="text" name="latitude" size="5" maxlength="6" value="{{objective_lat}}" /><br /><span class="small">This can be a positive or negative integer representing the latitude on the map where the quest will end at.  A quest can not end in a town, so be sure to avoid entering the same long/lat combination that represents an existing town.</span></td></tr>
+<tr><td width="20%">Longitude:</td><td><input type="text" name="longitude" size="5" maxlength="6" value="{{objective_long}}" /><br /><span class="small">This can be a positive or negative integer representing the longitude on the map where the quest will end at.</td></tr>
+<tr><td width="20%">Experience Rewarded:</td><td><input type="text" name="experience" size="5" maxlength="8" value="{{reward_exp}}" /><br /><span class="small">This is the amount of experience that will be rewarded for completing the quest.</td></tr>
+<tr><td width="20%">Gold Rewarded:</td><td><input type="text" name="gold" size="5" maxlength="8" value="{{reward_gold}}" /><br /><span class="small">This is the amount of gold that will be rewarded for completing the quest.</td></tr>
+<tr><td width="20%">Drop ID:</td><td><input type="text" name="dropid" size="5" maxlength="8" value="{{drop_id}}" /><br /><span class="small">This is the ID of the drop that will be rewarded for completing the quest.  Set this to 0 if you do not want to reward a drop for this quest.</td></tr>
+<tr><td width="20%">Starting Text:</td><td><textarea cols="40" rows="8" name="starttext" wrap="physical">{{begin_text}}</textarea><br /><span class="small">This is the text that appears to the user when they are first presented with the quest.</span></td></tr>
+<tr><td width="20%">Ending Text:</td><td><textarea cols="40" rows="8" name="endtext" wrap="physical">{{end_text}}</textarea><br /><span class="small">This is the text that appears when the user arrives at the ending quest area you specify to complete the quest.</span></td></tr>
+<tr><td><input type="hidden" name="adtoken" value="{$adtoken}" /></td></tr>
+<tr><td><input type="hidden" name="token" value="{$token}" /></td></tr>
+</table>
+<input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
+</form>
+END;
+    
+    $page = parsetemplate($page, $row);
+    admindisplay($page, "Edit Quests");
+    
+}
+
+function addquest() {
+    
+	$adtoken = admintoken();
+	$link = opendb();
+    if (isset($_POST["submit"])) {
+        
+		$check = protectcsfr();
+		$_POST = array_map('protectarray', $_POST);
+        extract($_POST);
+		if ($_POST["adtoken"] != $adtoken) die("no csfr here");
+		$token = protect($_POST['token']);
+		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
+		
+        $errors = 0;
+        $errorlist = "";
+        if ($name == "") { $errors++; $errorlist .= "Name is required.<br />"; }
+	  if ($townid == "") { $errors++; $errorlist .= "Town ID is required.<br />"; }
+	  if (!is_numeric($townid)) { $errors++; $errorlist .= "Town ID must be a number.<br />"; }
+	  if ($minlevel == "") { $errors++; $errorlist .= "Minimum level is required.<br />"; }
+	  if (!is_numeric($minlevel)) { $errors++; $errorlist .= "Minimum Level must be a number.<br />"; }
+	  if ($maxlevel == "") { $errors++; $errorlist .= "Maximum level is required.<br />"; }
+	  if (!is_numeric($maxlevel)) { $errors++; $errorlist .= "Maximum Level must be a number.<br />"; }
+	  if (is_numeric($minlevel) && is_numeric($maxlevel) && $minlevel > $maxlevel) { $errors++; $errorlist .= "Maximum level must be greater than or equal to minimum level.<br />"; }
+        if ($questtype == "") { $errors++; $errorlist .= "Quest Type is required.<br />"; }
+	  if (!is_numeric($questtype)) { $errors++; $errorlist .= "Quest Type must be 0 or 1.<br />"; }
+	  if (is_numeric($questtype) && ($questtype < 0 || $questtype > 1)) { $errors++; $errorlist .= "Quest Type must be 0 or 1.<br />"; } 
+        if ($monsterid == "") { $errors++; $errorlist .= "Monster ID is required.<br />"; }
+        if (!is_numeric($monsterid)) { $errors++; $errorlist .= "Monster ID must be numeric.<br />"; }
+	  if ($preid == "") { $errors++; $errorlist .= "Pre ID is required.<br />"; }
+	  if (!is_numeric($preid)) { $errors++; $errorlist .= "Pre ID must be numeric.<br />"; }
+	  if ($starttext == "") { $errors++; $errorlist .= "Start text is required.<br />"; }
+	  if ($endtext == "") { $errors++; $errorlist .= "End text is required.<br />"; }
+	  if ($latitude == "") { $errors++; $errorlist .= "Latitude is required.<br />"; }
+	  if (!is_numeric($latitude)) { $errors++; $errorlist .= "Latitude must be numeric.<br />"; }
+	  if ($longitude == "") { $errors++; $errorlist .= "Longitude is required.<br />"; }
+	  if (!is_numeric($longitude)) { $errors++; $errorlist .= "Longitude must be numeric.<br />"; }
+	  if ($experience == "") { $errors++; $errorlist .= "Experience is required.<br />"; }
+	  if (!is_numeric($experience)) { $errors++; $errorlist .= "Experience must be numeric.<br />"; }
+	  if ($gold == "") { $errors++; $errorlist .= "Gold is required.<br />"; }
+	  if (!is_numeric($gold)) { $errors++; $errorlist .= "Gold must be numeric.<br />"; }
+	  if ($dropid == "") { $errors++; $errorlist .= "Drop ID is required.<br />"; }
+	  if (!is_numeric($dropid)) { $errors++; $errorlist .= "Drop ID must be numeric.<br />"; }
+	  
+        
+	  if ($errors == 0) { 
+            $query = doquery($link, "INSERT INTO {{table}} SET name='" .$name. "',town_id='" .$townid. "',min_level='" .$minlevel. "',max_level='" .$maxlevel. "',quest_type='" .$questtype. "',monster_id='" .$monsterid. "',pre_id='" .$preid. "',begin_text='" .$starttext. "',end_text='" .$endtext. "',objective_lat='" .$latitude. "',objective_long='" .$longitude. "',reward_exp='" .$experience. "',reward_gold='" .$gold. "',drop_id='" .$dropid. "'", "quests");
+            admindisplay("Quest added.","Add Quest");
+        } else {
+            admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Towns");
+        }        
+        
+    }   
+        
+$token = formtoken();
+	
+$page = <<<END
+<b><u>Add Quest</u></b><br /><br />
+<form action="admin.php?do=addquest" method="post">
+<table width="90%">
+<tr><td width="20%">ID:</td><td>Autogenerated</td></tr>
+<tr><td width="20%">Name:</td><td><input type="text" name="name" size="30" maxlength="50" value="" /><br Name of the quest.</span></td></tr>
+<tr><td width="20%">Town ID:</td><td><input type="text" name="townid" size="5" maxlength="3" value="" /><br /><span class="small">This is the id of the town where the quest will appear.  If you give an id which doesn't exist, the quest will never show up.</span></td></tr>
+<tr><td width="20%">Minimum Level:</td><td><input type="text" name="minlevel" size="5" maxlength="5" value="" /><br /><span class="small">This is the earliest level the quest can be picked up.</span></td></tr>
+<tr><td width="20%">Maximum Level:</td><td><input type="text" name="maxlevel" size="5" maxlength="5" value="" /><br /><span class="small">This is the latest level the quest can be picked up.  If a user picks up this quest and then levels past this level, they will still be able to complete it.</span></td></tr>
+<tr><td width="20%">Quest Type:</td><td><input type="text" name="questtype" size="5" maxlength="1" value="" /><br /><span class="small">Set this to 0 for a 'fetch' quest where the user simply must arrive at the area you specify, or set this to 1 for a 'kill' quest where a user will fight a monster at the area you specify.</span></td></tr> 
+<tr><td width="20%">Monster ID:</td><td><input type="text" name="monsterid" size="5" maxlength="5" value="" /><br /><span class="small">If quest type is set to 1 for a 'kill' quest, then this is the id of the monster that must be beaten to finish the quest.</span></td></tr>
+<tr><td width="20%">Previous Quest ID:</td><td><input type="text" name="preid" size="5" maxlength="5" value="" /><br /><span class="small">This is for creating quest chains.  Set this to 0 if no previous quest must be completed for this quest to show up, or set it to the ID of the quest that must first be completed before this quest can be gotten.  For example, if you have two quests you want to chain together, set the first quest's Previous Quest ID to 0, and set the second quest's Previous Quest ID to the ID of the first quest.  Note that you still must be conscious of quest min/max levels when creating quest chains.  If the second quest in a chain has a maximum level lower than the first quest's minimum level, it will never show up!</span></td></tr>
+<tr><td width="20%">Latitude:</td><td><input type="text" name="latitude" size="5" maxlength="6" value="" /><br /><span class="small">This can be a positive or negative integer representing the latitude on the map where the quest will end at.  A quest can not end in a town, so be sure to avoid entering the same long/lat combination that represents an existing town.</span></td></tr>
+<tr><td width="20%">Longitude:</td><td><input type="text" name="longitude" size="5" maxlength="6" value="" /><br /><span class="small">This can be a positive or negative integer representing the longitude on the map where the quest will end at.</td></tr>
+<tr><td width="20%">Experience Rewarded:</td><td><input type="text" name="experience" size="5" maxlength="8" value="" /><br /><span class="small">This is the amount of experience that will be rewarded for completing the quest.</td></tr>
+<tr><td width="20%">Gold Rewarded:</td><td><input type="text" name="gold" size="5" maxlength="8" value="" /><br /><span class="small">This is the amount of gold that will be rewarded for completing the quest.</td></tr>
+<tr><td width="20%">Drop ID:</td><td><input type="text" name="dropid" size="5" maxlength="8" value="" /><br /><span class="small">This is the ID of the drop that will be rewarded for completing the quest.  Set this to 0 if you do not want to reward a drop for this quest.</td></tr>
+<tr><td width="20%">Starting Text:</td><td><textarea cols="40" rows="8" name="starttext" wrap="physical"></textarea><br /><span class="small">This is the text that appears to the user when they are first presented with the quest.</span></td></tr>
+<tr><td width="20%">Ending Text:</td><td><textarea cols="40" rows="8" name="endtext" wrap="physical"></textarea><br /><span class="small">This is the text that appears when the user arrives at the ending quest area you specify to complete the quest.</span></td></tr>
+<tr><td><input type="hidden" name="adtoken" value="{$adtoken}" /></td></tr>
+<tr><td><input type="hidden" name="token" value="{$token}" /></td></tr>
+</table>
+<input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
+</form>
+END;
+    
+    //$page = parsetemplate($page, $row);
+    admindisplay($page, "Add Quest");
+    
+}
+
+
+
+**************************************************
+Open templates/towns.php and find the code below:
+**************************************************
+
+<li /><a href="index.php?do=inn">Rest at the Inn</a>
+
+*********************
+After that, add this:
+*********************
+
+<li /><a href="index.php?do=getquests">Available Quests</a>
+
+
+
+****************************************************
+Open templates/primary.php and find the code below:
+****************************************************
+
+function openmappopup(){
+var popurl="index.php?do=showmap"
+winpops=window.open(popurl,"","width=520,height=520,scrollbars")
+}
+
+
+*********************
+After that, add this:
+*********************
+
+function openquestlogpopup(){
+var popurl="index.php?do=questlog"
+winpops=window.open(popurl,"","width=210,height=500,scrollbars")
+}
+
+
+****************************************************
+Open templates/rightnav.php and find the code below:
+****************************************************
+
+<a href="javascript:opencharpopup()">Extended Stats</a>
+
+*********************
+After that, add this:
+*********************
+
+<br /><a href="javascript:openquestlogpopup()">Quest Log</a>
+
+
+****************************************************
+Open templates/admin.php and find the code below:
+****************************************************
+
+<a href="admin.php?do=addtown">Add Town</a><br />
+
+
+*********************
+After that, add this:
+*********************
+
+<a href="admin.php?do=quests">Edit Quests</a><br /> 
+<a href="admin.php?do=addquest">Add Quest</a><br />
+
+
+
+****************************************************
+THAT"S IT!  Now just follow the instructions below:
+****************************************************
+
+Upload all the files from this zip file (other than these instructions)
+to your DK installation directory.  Be sure to place the files within
+the templates folder into the templates subdirectory of your
+DK installation folder.
+
+Next, navigate to the quest_install.php file from your browser and run
+the installation script.  When that completes successfully, DELETE the
+quest_install.php file and you are done.
+
+To get to the tutorial scripts, go to the Dragon Knight starter town
+(Midworld) and click on the "Available Quests" link.  That should get 
+you started.  Once you are done with those short quests, you can go
+to the admin screens to start adding/editing quests.
+
+I don't think I left anything out, but if you discover I did, please
+shoot me an email so I can correct the problem.
+
+Have fun!
+
+Trav (travman75@hotmail.com)
+

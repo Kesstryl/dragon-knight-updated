@@ -29,6 +29,7 @@ Security changes
 - added a hidden field in registration to prevent spam registration.
 Additional changes
 - added the top ten mod created by renderse7en from the DK mods forums because he created this engine and also wrote the mod.
+- added an extra folder with mods and instructions for installing the mods.  Included mods have been updated to mysqli with security added, and tested to work with 1.1.12
 
 ### 1.1.11 (3.26.2006) ###
 ### Thanks to r0xes & Adam. :)
