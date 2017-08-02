@@ -1,7 +1,6 @@
 <?php // login.php :: Handles logins and cookies.
 
 include('lib.php');
-$check = protectcsfr();
 
 if (isset($_GET["do"])) {
 	$check = protectcsfr();

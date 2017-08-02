@@ -5,7 +5,6 @@ if (file_exists('install.php')) { die("Please delete <b>install.php</b> from you
 include('lib.php');
 include('cookies.php');
 $link = opendb();
-$check = protectcsfr();
 $controlquery = doquery($link, "SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
 $controlrow = mysqli_fetch_array($controlquery);
 
