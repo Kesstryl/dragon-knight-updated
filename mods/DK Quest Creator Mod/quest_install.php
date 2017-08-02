@@ -58,7 +58,7 @@ PRIMARY KEY  (`id`)
 END;
 
 mysqli_query($link, $sql4) or die("Error connecting to DB.");
-echo "Quest progress table successfully created!<br />Installation complete.  Please delete the installation script now.<br />You are now ready to <a href="index.php">play the game</a><br>Have fun!  -- Trav";
+echo "Quest progress table successfully created!<br />Installation complete.  DEKETE the installation script now for security reasons.<br />You are now ready to <a href="index.php">play the game</a><br>Have fun!  -- Trav";
 
 } else {
 	echo 'Welcome to the DK Quest Creator installer!<br /><form action="quest_install.php" method="post"><input type="submit" name="submit" value="Install"></form>';

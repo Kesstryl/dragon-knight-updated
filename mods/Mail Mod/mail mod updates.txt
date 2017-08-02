@@ -1,0 +1,55 @@
+This was made by Jerry and was modified by me (note - not sure who original author is). No credit needed.  (mod updated by Kesstryl)
+(This mod gives a red warning when the user has unread mail on the left nav  ~ note by Kesstyl for clarity)
+
+==================Go to lib.php.==================
+==================Find in the display function:==================
+
+// Now make numbers stand out if they're low.
+if ($userrow["currenthp"] <= ($userrow["maxhp"]/5)) { $userrow["currenthp"] = "<blink><span class=\"highlight\"><b>*".$userrow["currenthp"]."*</b></span></blink>"; }
+if ($userrow["currentmp"] <= ($userrow["maxmp"]/5)) { $userrow["currentmp"] = "<blink><span class=\"highlight\"><b>*".$userrow["currentmp"]."*</b></span></blink>"; }
+
+==================Add this code under the above code:==================
+
+$result = doquery($link,"SELECT * FROM {{table}} WHERE UserTo='$userrow[id]' AND STATUS='unread'","mail");
+$num_rows = mysqli_num_rows($result);
+if ( $num_rows != "unread") {
+$userrow["check_mail2"] = "You have ".$num_rows." new message(s).<br />";
+}else{
+	$userrow["check_mail2"] = "";
+}  
+==================Save and close.==================
+
+
+==================Open templates/leftnav.php==================
+==================Find==================
+
+Click on a direction to travel.
+</td></tr>
+</table><br />
+
+==================Add under==================
+
+<table>
+<tr><td class="title" align="center">
+Alerts & Notices
+</td></tr>
+<tr><td align="center">
+<a class="red">{{check_mail2}}</a><br />
+</td></tr>
+</table>
+==================save and close.==================
+
+
+==================Open templates/primary.php==================
+Add this somewhere in the style tags:
+
+a.red{
+	color: red; 
+	font-weight: normal; 
+	text-decoration: blink;
+}
+
+
+==================save and close.==================
+
+Thats all.
