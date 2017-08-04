@@ -464,9 +464,11 @@ function editquest($id) {
         
 	  if ($errors == 0) { 
             $query = doquery($link, "UPDATE {{table}} SET name='" .$name. "',town_id='" .$townid. "',min_level='" .$minlevel. "',max_level='" .$maxlevel. "',quest_type='" .$questtype. "',monster_id='" .$monsterid. "',pre_id='" .$preid. "',begin_text='" .$starttext. "',end_text='" .$endtext. "',objective_lat='" .$latitude. "',objective_long='" .$longitude. "',reward_exp='" .$experience. "',reward_gold='" .$gold. "',drop_id='" .$dropid. "' WHERE id='$id' LIMIT 1", "quests");
-            admindisplay("Quest updated.","Edit Quests");
+            unset($_SESSION['token']);
+			admindisplay("Quest updated.","Edit Quests");
         } else {
-            admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Towns");
+            unset($_SESSION['token']);
+			admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Towns");
         }        
         
     }   
@@ -556,8 +558,10 @@ function addquest() {
         
 	  if ($errors == 0) { 
             $query = doquery($link, "INSERT INTO {{table}} SET name='" .$name. "',town_id='" .$townid. "',min_level='" .$minlevel. "',max_level='" .$maxlevel. "',quest_type='" .$questtype. "',monster_id='" .$monsterid. "',pre_id='" .$preid. "',begin_text='" .$starttext. "',end_text='" .$endtext. "',objective_lat='" .$latitude. "',objective_long='" .$longitude. "',reward_exp='" .$experience. "',reward_gold='" .$gold. "',drop_id='" .$dropid. "'", "quests");
-            admindisplay("Quest added.","Add Quest");
+            unset($_SESSION['token']);
+			admindisplay("Quest added.","Add Quest");
         } else {
+			unset($_SESSION['token']);
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Towns");
         }        
         

@@ -1,0 +1,56 @@
+PvP for dk, made by DOUBLET, edit by Dragonking - And Further Fixed by Fantasia
+
+
+
+////////////////////////////////////// AND THEN FIXED BY ErRoR /////////////////////////////////////
+(and further updated by Kesstryl)
+
+
+
+				NOTE *Needs Mail Mod to work*
+
+
+
+Uses Class Image FIXED Mod for Battle Images(optional with instructions)
+
+
+----------- Read Fix Log for Fixes, Changes and Additions -------------
+
+1. Open index.php (And Find "// Fighting functions") add lines
+
+     // Start PVP
+	elseif ($do[0] == "mainfight") { include('pvpfight.php'); mainfight(); }
+	elseif ($do[0] == "pvpfight") { include('pvpfight.php'); pvpfight(); }
+	elseif ($do[0] == "pvpfight2") { include('pvpfight.php'); pvpfight2(); }
+	elseif ($do[0] == "pvpfight3") { include('pvpfight.php'); pvpfight3($do[1]); }
+	elseif ($do[0] == "pvpfight4") { include('pvpfight.php'); pvpfight4($do[1]); }
+     //End PVP
+
+Below Fighting Functions
+#save and close index.php
+
+
+2. Open templates/towns.php and add lines
+
+<li /><a href="index.php?do=mainfight">Challenge Arena</a>
+
+#save and close towns.php
+
+
+3.. and then go to templates/rightnav.php and find this:
+
+Exp: {{experience}}<br />
+Gold: {{gold}}<br />
+
+and copy this right after:
+
+PVP Level: {{fightlvl}}<br />
+
+
+4. upload install.php and phpfight.php to your server along with the modified files from above...
+.run install.php...if row and table are added delete install.php from your server for security reasons!
+
+if u need any help then post in se7enet.com/forums
+
+
+
