@@ -23,7 +23,7 @@ function checkmail(){
 global $userrow;
 
 $link = opendb();
-$result = doquery($link, "SELECT * FROM {{table}} WHERE UserTo='$userrow[id]' AND STATUS='unread'", "mail");
+$result = doquery($link, "SELECT * FROM {{table}} WHERE UserTo='$userrow[charname]' AND STATUS='unread'", "mail");
 $num_rows = mysqli_num_rows($result);
 if ( $num_rows > "0") {
 	$userrow["check_mail"] = "<a href=\"mail.php\">Mail [".$num_rows."]</a><br />";
