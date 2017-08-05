@@ -100,8 +100,9 @@ if($row["fightlvl"] > $userrow["fightlvl"]){   //you lose
  $auto = "Automessage PvP";
 $win = $row["bet"] * 2;
 $title = "Victory";
+$status = "unread";
 $message = "You won duel against ".$userrow["charname"].". You won $".$win."";
-doquery($link, "INSERT INTO {{table}} SET UserFrom='".$userrow["charname"]."', UserTo='".$row["challenger"]."', Message='$message', Subject='$title', STATUS='unread', SentDate=NOW()", "mail");
+doquery($link, "INSERT INTO {{table}} SET UserFrom='".$userrow["charname"]."', UserTo='".$row["challenger"]."', Subject='$title', Message='$message', STATUS='$status', SentDate=NOW()", "mail");
 //update tabel....winner
 $newgold = $pvprow["gold"] + $win;
 $updatequery = doquery($link, "UPDATE {{table}} SET gold='$newgold' WHERE charname='".$row["challenger"]."'", "users");
@@ -129,8 +130,9 @@ $newgold = $bet2 + $bet;
 $query3 = doquery($link, "UPDATE {{table}} SET gold='$newgold' WHERE charname='$challenger' LIMIT 1", "users");
 $auto = "Automessage PvP";
 $title = "Draw";
+$status = "unread";
 $message = "You had fight with ".$userrow["charname"]." and it was draw.";
-doquery($link, "INSERT INTO {{table}} SET UserFrom='".$userrow["charname"]."', UserTo='".$row["challenger"]."', Message='$message', Subject='$title', STATUS='unread', SentDate=NOW()", "mail");
+doquery($link, "INSERT INTO {{table}} SET UserFrom='".$userrow["charname"]."', UserTo='".$row["challenger"]."', Subject='$title', Message='$message', STATUS='$status', SentDate=NOW()", "mail");
 //delete row from mysql
 doquery($link, "DELETE FROM {{table}} WHERE id='$id'", "pvp");
 
@@ -144,8 +146,9 @@ $page = '<table><tr><td><img src=\"images/classes/'.$userrow["charclass"].'.jpg\
 
 $win = $row["bet"] * 2;
 $title = "Challenge defeat";
+$status = "unread";
 $message = "You were defeated by ".$userrow["charname"]." and you lost  $".$row["bet"]."";
-doquery($link, "INSERT INTO {{table}} SET UserFrom='".$userrow["charname"]."', UserTo='".$row["challenger"]."', Message='$message', Subject='$title', STATUS='unread', SentDate=NOW()", "mail");
+doquery($link, "INSERT INTO {{table}} SET UserFrom='".$userrow["charname"]."', UserTo='".$row["challenger"]."', Subject='$title', Message='$message', STATUS='$status', SentDate=NOW()", "mail");
 //update table...looser
 $newgold = $pvprow["gold"] - $row["bet"];
 $updatequery = doquery($link, "UPDATE {{table}} SET gold='$newgold' WHERE charname='".$row["challenger"]."' ", "users");
