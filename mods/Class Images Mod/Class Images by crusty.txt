@@ -1,0 +1,86 @@
+
+#--------------------------------------------------------
+By: Nathaniel and updated by CRUSTY
+#--------------------------------------------------------
+
+#
+#-----[ IMAGES & FTP ]------------------------------------------
+# 
+create an image for each class type save as a .jpg and with the corresponding class id.
+
+mage=1
+warrior=2
+paladin=3
+
+example:
+2.jpg
+
+create a new folder in the images directory and name #it "classes"
+
+then upload your images to this folder
+or upload folder classes in images directory
+
+#
+#-----[ OPEN ]------------------------------------------
+# 
+lib.php
+
+#
+#-----[ FIND in the function display]------------------------------------------
+# 
+$userrow["experience"] = number_format($userrow["experience"]);
+$userrow["gold"] = number_format($userrow["gold"]);
+
+#-----[ AFTER, ADD ]------------------------------------------
+# 
+$userrow["classimg"] = "<img src=\"images/classes/".$userrow["charclass"].".jpg\" />"; // class image
+
+#
+#-----[ OPEN ]------------------------------------------
+# 
+/templates/rightnav.php
+
+#-----[ FIND ]------------------------------------------
+# 
+<b>{{charname}}</b><br />
+
+#-----[ AFTER, ADD ]------------------------------------------
+# 
+{{classimg}}<br><br> 
+
+#-----[ OPEN ]------------------------------------------
+# 
+index.php
+
+#-----[ FIND ]------------------------------------------
+# 
+function onlinechar($id) {
+    
+    global $controlrow;
+    $userquery = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' OR charname='$id' LIMIT 1", "users");
+    if (mysqli_num_rows($userquery) == 1) { $userrow = mysql_fetch_array($userquery); } else { display("Lietoaajs Nepastaav.", "Error"); }
+    
+    // Format various userrow stuffs.
+    $userrow["experience"] = number_format($userrow["experience"]);
+    $userrow["gold"] = number_format($userrow["gold"]);
+
+#-----[ PRESS ENTER AND PASTE THIS ]------------------------------------------
+# 
+    $userrow["classimg"] = "<img src=\"images/classes/".$userrow["charclass"].".jpg\" />"; 
+
+#
+#-----[ OPEN ]------------------------------------------
+# 
+/templates/onlinechar.php
+
+#-----[ FIND ]------------------------------------------
+# 
+Difficulty: {{difficulty}}<br />
+
+#-----[ AFTER, ADD ]------------------------------------------
+# 
+{{classimg}}<br><br> 
+
+#-----[ SAVE/CLOSE ALL FILES AND UPLOAD]------------------------------------------ 
+#
+# CRUSTY
