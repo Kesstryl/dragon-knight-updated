@@ -704,7 +704,7 @@ CREATE TABLE IF NOT EXISTS `$users` (
   `slot3name` varchar(30) NOT NULL default 'None',
   `dropcode` mediumint(8) unsigned NOT NULL default '0',
   `spells` varchar(50) NOT NULL default '0',
-  `towns` varchar(50) NOT NULL default '0',
+  `towns` varchar(50) NOT NULL default '1',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB;
 END;
