@@ -1,0 +1,10 @@
+Mods (updated 8/5/2017 by Kesstryl)
+
+These mods are finished and fully tested to be working with Dragon Knight Updated
+
+Mail Mod
+Quest Creator Mod
+
+These mods are partially working but unfinished
+
+pvp mod - bug with form data in pvpfight 3 function not working
