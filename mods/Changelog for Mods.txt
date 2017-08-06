@@ -6,6 +6,10 @@ Mail Mod
 Quest Creator Mod
 PVP Mod (Class Images mod is still not working with PvP Mod though)
 Class Images Mod
+Random Boss Mod
 
 These mods are partially working but unfinished
+
+
+Clans Mod
 
