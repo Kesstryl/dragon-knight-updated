@@ -1,0 +1,89 @@
+
+To INSTALL:
+
+Copy clan.php and templates/clan.php to your server.
+
+Insert somewhere between the elseif tags in INDEX.PHP :
+----------------------------------------------------------
+    //Clans functions
+    elseif ($do[0] == "clan") {  include('clan.php'); clan(); }
+    elseif ($do[0] == "clanjoin") {  include('clan.php'); clanjoin(); }
+    elseif ($do[0] == "clanmembers") {  include('clan.php'); members(); }
+    elseif ($do[0] == "clancreate") {  include('clan.php'); create(); }
+    elseif ($do[0] == "clanbabble") {  include('clan.php'); clanbabble(); }
+    elseif ($do[0] == "clanleader") {  include('clan.php'); leader(); }
+    elseif ($do[0] == "clannewbies") {  include('clan.php'); newmembers(); }
+    elseif ($do[0] == "clankick") {  include('clan.php'); kick(); }
+   
+------------------------------------------------------------
+
+Open templates/primary.php
+Insert before </style> tag in templates/primary.php:
+
+
+------------------------------------------------------------
+.clan {
+  border: solid 1px black;
+  background-color: #BABAA9;
+  padding: 5px;
+  margin: 3px;
+}
+.clanmenu {
+  border: solid 1px black;
+  background-color: #bbbb99;
+}
+.nimekiri {
+  border: solid 1px black;
+  background-color: #FFFFFF;
+}
+------------------------------------------------------------
+
+Open templates/leftnav
+go to this:
+
+<table width="100%">
+<tr><td class="title"><img src="images/button_functions.gif" alt="Functions" title="Functions" /></td></tr>
+<tr><td>
+{{forumslink}}
+{{adminlink}}
+
+and insert this right after:
+
+<a href="index.php?do=clan">Clan</a></br>
+
+------------------------------------------------------------
+
+Go to phpMyAdmin on your server
+In your main database table, click on SQL
+copy and paste this code into the text field and click go.
+
+------------------------------------------------------------
+CREATE TABLE `dk_clan` (
+  `id` mediumint(5) NOT NULL auto_increment,
+  `name` varchar(50) default NULL,
+  `logo` varchar(100) NOT NULL default 'images/logo.gif',
+  `message` varchar(50) NOT NULL,
+  `leader` varchar(50) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB;
+
+CREATE TABLE `dk_clanbabble` (
+  `id` mediumint(10) unsigned NOT NULL auto_increment,
+  `posttime` time NOT NULL default '00:00:00',
+  `author` varchar(30) NOT NULL,
+  `babble` varchar(220) NOT NULL,
+  `clan` mediumint(5) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB;
+
+ALTER TABLE `dk_users` ADD `clan` MEDIUMINT( 5 ) NOT NULL DEFAULT '0',
+ADD `clanjoin` MEDIUMINT( 5 ) NOT NULL DEFAULT '0';
+-------------------------------------------------------------
+
+Thats it. You can now start modifying and adding stuff to this mod. Some good ideas are:
+*Leader can change clan name,logo and message.
+*Clan Top list
+Maybe I will add them later. Remember, this is just a BASE for clan mod.
+
+Problems, suggestions,help: andoroots@yahoo.co.uk. Feel free to email.
+You may remove copyright note, IF you notify me to my email and send me your game URL. Just for inspiring me.
