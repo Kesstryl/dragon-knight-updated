@@ -1,4 +1,6 @@
 <?php
+//Dragon Knight Image Verification
+//Greg Smith (xanderman)
 session_start();
 $alphanum = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 $rand = substr(str_shuffle($alphanum), 0, 5);$_SESSION['image_random_value'] = md5($rand);
