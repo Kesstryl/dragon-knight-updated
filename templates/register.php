@@ -23,7 +23,8 @@ $template = <<<THEVERYENDOFYOU
 <tr><td>Character Class:</td><td><select name="charclass"><option value="1">{{class1name}}</option><option value="2">{{class2name}}</option><option value="3">{{class3name}}</option></select></td></tr>
 <tr><td>Difficulty:</td><td><select name="difficulty"><option value="1">{{diff1name}}</option><option value="2">{{diff2name}}</option><option value="3">{{diff3name}}</option></select></td></tr>
 <tr><td colspan="2">See <a href="help.php">Help</a> for more information about character classes and difficulty levels.<br /><br /></td></tr>
-<tr><td colspan="2"><input type="hidden" name="birthday" value=""><input type="submit" name="submit" value="Submit" onclick="return confirm('Confirm action');" /> <input type="reset" name="reset" value="Reset" /></td></tr>
+<tr><td>Verification:</td><td><img src="auth.php" alt="Image Verification" /><br /><br />Copy the text from the above image into the box below. Can't read it? <a href="users.php?do=register">Refresh</a>.<br /><input id="imagever" name="imagever" type="text" /></td></tr>
+<tr><td colspan="2"><input type="hidden" name="birthday" value=""><input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" /></td></tr>
 <tr><td><input type="hidden" name="token" value="{$token}" />   </td></tr>
 </table>
 </form>

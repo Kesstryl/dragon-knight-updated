@@ -64,6 +64,10 @@ function register() { // Register a new account.
 		if ($birthday != "") { $errors++; $errorlist .= "Spammers are not allowed.<br />"; }
         $salt = $username;
 		$password = hash('sha256', $salt.$password1);
+		
+		// Process image verification.
+        $number = $_POST['imagever'];
+        if (md5($number) != $_SESSION['image_random_value']) { $errors++; $errorlist .= "Image verification failed.<br />"; }
         
         if ($errors == 0) {
             
