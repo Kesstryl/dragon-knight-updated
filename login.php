@@ -2,16 +2,20 @@
 
 include('lib.php');
 
+
 if (isset($_GET["do"])) {
 	$check = protectcsfr();
 	$_GET = array_map('protectarray', $_GET);
     if ($_GET["do"] == "login") { login(); }
+	elseif ($_GET["do"] == "nobrute") { nobrute(); }
     elseif ($_GET["do"] == "logout") { logout(); }
 }
 
 function login() {
     
     include('config.php');
+//	unset($_SESSION['loginCount']);
+	@$_SESSION['loginCount'] += 0;
 
     if (isset($_POST["submit"])) {
 		$check = protectcsfr();
@@ -19,12 +23,19 @@ function login() {
         $username = protect($_POST['username']);
         $pass = protect($_POST['password']);
 		$token = protect($_POST['token']);
-		
 		if ($_SESSION['token'] != $token) { die("Invalid request");}
+	
+		if($_SESSION['loginCount']>=1){
+			header("Location: login.php?do=nobrute");
+			die();
+		}
 		$salt = $username;
 		$password = hash('sha256', $salt.$pass);
         $query = doquery($link, "SELECT * FROM {{table}} WHERE username='$username' AND password='$password' LIMIT 1", "users") or die(mysqli_error($link));
-        if (mysqli_num_rows($query) != 1) { die("Invalid username or password. Please go back and try again."); }
+        if (mysqli_num_rows($query) != 1) { 
+            $_SESSION['loginCount'] = $_SESSION['loginCount']+1;
+		die("Invalid username or password. Please <a href=\"login.php?do=login\">go back </a>and try again."); }
+		
         $row = mysqli_fetch_array($query);
         if (isset($_POST["rememberme"])) { $expiretime = time()+604800; $rememberme = 1; } else { $expiretime = 0; $rememberme = 0; }
         $random = rand(100, 10000);
@@ -36,6 +47,7 @@ function login() {
 		unset($_SESSION['token']);
 		$_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
 		$_SESSION['me'] = sha1($itsme);
+		unset($_SESSION['loginCount']);
         header("Location: index.php");
         die();
         
@@ -46,8 +58,21 @@ function login() {
     display($page, $title, false, false, false, false);
 	 
 }
-    
 
+function nobrute(){
+	if(isset($_POST['verify'])){
+        // Process image verification.
+			$number = protect($_POST['imagever']);
+			if (md5($number) != $_SESSION['image_random_value']) { die("Image verification failed.<br />"); }
+			unset($_SESSION['loginCount']);	
+			header("Location: login.php?do=login");
+			die();
+	}
+	$page = "Verify that you are human</br></br><form action=\"login.php?do=nobrute\" method=\"post\">Verification:<img src=\"auth.php\" alt=\"Image Verification\" /><br /><br />Copy the text from the above image into the box below. Can't read it? <a href=\"login.php?do=nobrute\">Refresh</a>.<br /><input id=\"imagever\" name=\"imagever\" type=\"text\" /><input type=\"submit\" name=\"verify\" value=\"Submit\" /></form>";
+	$title = "Verify Yourself";
+	display($page, $title, false, false, false, false);
+}
+	
 function logout() {
     
     setcookie("dkgame", "", time()-100000, "/", "", 0, $httponly);

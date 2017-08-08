@@ -128,15 +128,17 @@ function verify() {
 		$verify = protect($_POST['verify']);
 		$birthday = protect($_POST['birthday']);
 		$token = protect($_POST['token']);
-		
 		if ($_SESSION['token'] != $token) { die("Invalid request");}
+		// Process image verification.
+        $number = $_POST['imagever'];
+        if (md5($number) != $_SESSION['image_random_value']) {die ("Image verification failed.<br />"); }
         $userquery = doquery($link, "SELECT username,email,verify FROM {{table}} WHERE username='$username' LIMIT 1","users");
         if (mysqli_num_rows($userquery) != 1) { die("No account with that username."); }
         $userrow = mysqli_fetch_array($userquery);
         if ($userrow["verify"] == 1) { die("Your account is already verified."); }
         if ($userrow["email"] != $email) { die("Incorrect email address."); }
         if ($userrow["verify"] != $verify) { die("Incorrect verification code."); }
-		if ($birthday != "") { $errors++; $errorlist .= "Spammers are not allowed.<br />"; }
+		if ($birthday != "") { die("Spammers are not allowed.<br />"); }
         // If we've made it this far, should be safe to update their account.
         $updatequery = doquery($link, "UPDATE {{table}} SET verify='1' WHERE username='$username' LIMIT 1","users");
 		unset($_SESSION['token']);
@@ -158,8 +160,10 @@ function lostpassword() {
         $password1 = protect($_POST['password1']);
 		$password2 = protect($_POST['password2']);
 		$token = protect($_POST['token']);
-		
 		if ($_SESSION['token'] != $token) { die("Invalid request");}
+		// Process image verification.
+        $number = $_POST['imagever'];
+        if (md5($number) != $_SESSION['image_random_value']) { die("Image verification failed.<br />"); }
         $userquery = doquery($link, "SELECT email FROM {{table}} WHERE email='$email' LIMIT 1","users");
         if (mysqli_num_rows($userquery) != 1) { die("No account with that email address."); }
         $newpass = "";
@@ -208,7 +212,6 @@ function changepassword() {
 		$newpass1 = protect($_POST['newpass1']);
 		$newpass2 = protect($_POST['newpass2']);
 		$token = protect($_POST['token']);
-		
 		if ($_SESSION['token'] != $token) { die("Invalid request");}
         $userquery = doquery($link, "SELECT * FROM {{table}} WHERE username='$username' LIMIT 1","users");
         if (mysqli_num_rows($userquery) != 1) { die("No account with that username."); }
