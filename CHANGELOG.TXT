@@ -26,7 +26,8 @@ Security changes
 - added an array sanitize function and implemented it where POST data is extracted as an array.
 - EXTR_SKIP has been added to the extract global as an extra security measure.
 - libxml_disable_entity_loader set to true in the xml variable to prevent xml entity expansion attacks. 
-- added a verification captcha to registration - code by Greg Smith (xanderman from the old dk forums).
+- added a verification captcha to registration and lost password - code by Greg Smith (xanderman from the old dk forums).
+- added a verification captcha to appear on a second failed login attempt to reduce brute force attacks.
 - added a hidden field in registration to prevent spam registration.
 Additional changes
 - added the top ten mod created by renderse7en from the DK mods forums because he created this engine and also wrote the mod.
