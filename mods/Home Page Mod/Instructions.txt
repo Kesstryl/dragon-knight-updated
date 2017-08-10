@@ -1,0 +1,89 @@
+Home Page Mod written by Kesstryl for Dragon Knight Updated version 1.1.12 (8/10/2017)
+
+The purpose of this mod is to have a home page where visitors who are not logged in can see
+a description and information about your game.  People are more likely to create an account for a 
+game when they know what the game is about, and when they see news and in-game screenshots.
+This is also great for SEO and helps game owners have meaningful content 
+for when they apply for a google adsense account for their game.
+The mod uses DK's own templating system so all html changes can be done from 
+the template folder home.php without messing with php code.  Fix it up, make it snazzy, 
+it's there for you to make your game look more inviting to new players!
+
+
+***Step 1
+Go to phpmyadmin in your WAMP or host server.
+In the dk_control table, click on the sql tab and insert this into the text field, then click "go":
+
+ALTER TABLE `dk_control` ADD `description` text NOT NULL default '';
+
+
+***Step 2
+OPEN index.php AND FIND THIS LINE
+ 
+ // Login (or verify) if not logged in.
+$userrow = checkcookies();
+if ($userrow == false) { 
+    if (isset($_GET["do"])) {
+		$check = protectcsfr();
+		$_GET = protect($_GET);
+        if ($_GET["do"] == "verify") { header("Location: users.php?do=verify"); die(); }
+    }
+    header("Location: login.php?do=login"); die(); 
+}
+
+replace 
+
+header("Location: login.php?do=login"); die();
+
+with
+
+header("Location: home.php?do=homepage"); die();
+
+
+***Step 3
+
+Open admin.php
+
+In the " main" function look for this:
+
+if ($diff3mod == "") { $errors++; $errorlist .= "Difficulty 3 value is required.<br />"; }
+
+and add this right after
+
+if ($description == "") { $errors++; $errorlist .= "Game description is required.<br />"; }
+Find this:
+
+$query = doquery($link, "UPDATE {{table}} SET gamename='$gamename',gamesize='$gamesize',forumtype='$forumtype',forumaddress='$forumaddress',compression='$compression',class1name='$class1name',class2name='$class2name',class3name='$class3name',diff1name='$diff1name',diff2name='$diff2name',diff3name='$diff3name',diff2mod='$diff2mod',diff3mod='$diff3mod',gameopen='$gameopen',verifyemail='$verifyemail',gameurl='$gameurl',adminemail='$adminemail',shownews='$shownews',showonline='$showonline',showbabble='$showbabble' WHERE id='1' LIMIT 1", "control");
+
+And replace with this:
+
+$query = doquery($link, "UPDATE {{table}} SET gamename='$gamename',gamesize='$gamesize',forumtype='$forumtype',forumaddress='$forumaddress',compression='$compression',class1name='$class1name',class2name='$class2name',class3name='$class3name',diff1name='$diff1name',diff2name='$diff2name',diff3name='$diff3name',diff2mod='$diff2mod',diff3mod='$diff3mod',gameopen='$gameopen',verifyemail='$verifyemail',gameurl='$gameurl',adminemail='$adminemail',shownews='$shownews',showonline='$showonline',showbabble='$showbabble', description='$description' WHERE id='1' LIMIT 1", "control");
+
+
+Find this in the form field:
+
+<tr><td width="20%">Difficulty 1 Name:</td><td><input type="text" name="diff1name" size="20" maxlength="50" value="{{diff1name}}" /><br /></td></tr>
+<tr><td width="20%">Difficulty 2 Name:</td><td><input type="text" name="diff2name" size="20" maxlength="50" value="{{diff2name}}" /><br /></td></tr>
+<tr><td width="20%">Difficulty 2 Value:</td><td><input type="text" name="diff2mod" size="3" maxlength="3" value="{{diff2mod}}" /><br /><span class="small">Default is 1.2. Specify factoral value for medium difficulty here.</span></td></tr>
+<tr><td width="20%">Difficulty 3 Name:</td><td><input type="text" name="diff3name" size="20" maxlength="50" value="{{diff3name}}" /><br /></td></tr>
+<tr><td width="20%">Difficulty 3 Value:</td><td><input type="text" name="diff3mod" size="3" maxlength="3" value="{{diff3mod}}" /><br /><span class="small">Default is 1.5. Specify factoral value for hard difficulty here.</span></td></tr>
+
+and add this right after:
+
+<tr><td width="20%">Game Description:</td><td><textarea name="description" rows="7" cols="40">{{description}}</textarea><br /><span class="small">Change this to change your game description.</span></td></tr>
+
+
+***Step 4
+make sure the home.php code is in your game directory along with the template home.php and images screenshots folder
+and you should now have a homepage for your game.
+
+Non registered users will see the homepage first to find out more about your game, and then they can registered
+from the top nav.  If you want logged out users to also be directed to the home page, you can add this in login.php
+
+find in the logout function: 
+
+	header("Location: login.php?do=login");
+
+and replace with this:
+
+	header("Location: home.php?do=homepage");
