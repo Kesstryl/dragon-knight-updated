@@ -9,13 +9,13 @@ Class Images Mod
 Random Boss Mod
 Clans Mod (tables are formatting strangely, will work on layout problems)
 Home Page Mod
+Moving On Maps Mods
 
 These mods are partially working but unfinished
 
 Social Titles Mod
 Friends List Mod
-Home Page Mod
-Explore Map Mod
+
 
 
 
