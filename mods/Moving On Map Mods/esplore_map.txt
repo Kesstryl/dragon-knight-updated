@@ -1,0 +1,51 @@
+Explore Map Mod
+This mod adds a map to your explore page which shows your location on the map with a full page vertical/horizontal crosshair.
+
+Credits: This is a modified version of Whiz's Minimap Mod 
+(that you can check out here: http://dragon.se7enet.com/mods/index.php?do=file&id=178) 
+
+Which, according to him, is a mod of ZDMaster's Player Map Mod 
+(which you can check out here: http://dragon.se7enet.com/mods/index.php?do=file&id=175)
+
+This mod uses templates/explore.php
+
+The map.gif is from ZDMaster (according to Whiz).
+
+The lib.php and leftnav.php modifications are what Whiz told you to do in his minimap mod (which I like to use as a "radar" system that's always on the screen), so you should check out his mod for that.
+
+I modded the DoExplore() function in index.php to use the new ./templates/explore.pho file I made (based off of Whiz's minimap).
+
+
+function doexplore() { 
+// Just spit out a map exploring page.
+// Exploring without a GET string is normally when they first log in, or when they've just finished fighting.
+
+   global $userrow, $controlrow;
+
+   $userrow["brx"] = -($controlrow["gamesize"]) - $userrow["longitude"] + 200;
+   $userrow["bry"] = -($controlrow["gamesize"]) + $userrow["latitude"] + 200; 
+
+   if ($userrow["latitude"] < 0) 
+   { 
+      $userrow["latitude"] = $userrow["latitude"] * -1 . "S";    
+   } 
+   else 
+   { 
+      $userrow["latitude"] .= "N"; 
+   }
+   if ($userrow["longitude"] < 0) 
+   { 
+      $userrow["longitude"] = $userrow["longitude"] * -1 . "W"; 
+   } 
+   else 
+   { 
+      $userrow["longitude"] .= "E"; 
+   }	    
+
+   $page = gettemplate("explore");
+   $page = parsetemplate($page, $userrow);
+   return $page;   
+}
+
+
+And my explore.php is a new template file (but its really just an exploded version of Whiz's leftnav.php thing) so you can just go ahead and look at that if you want to heh.

@@ -1,0 +1,48 @@
+This mod adds a mini map to the left nav panel which shows the location of the player with full map size crosshairs
+
+### open ###
+
+lib.php
+
+### Find ###
+
+// Format various userrow stuffs...
+
+### after, add ###
+
+        $userrow["brx"] = -($controlrow["gamesize"]) - $userrow["longitude"] + 50;    
+        $userrow["bry"] = -($controlrow["gamesize"]) + $userrow["latitude"] + 50; 
+
+### open ###
+
+templates/leftnav.php
+
+### find ###
+
+Longitude: {{longitude}}<br />
+
+### after, add ###
+
+<table width=100 height=100 style="background-image:url('images/map.gif'); background-position: {{brx}}px {{bry}}px; background-repeat: no-repeat; border-width: 1px; border-spacing: ; border-style: outset; border-color: black; border-collapse: collapse;">
+<tr>
+<td width=50 height=50 style="border-width: 1px; padding: 0px; border-style: dashed; border-color: blue;">
+</td>
+<td width=50 height=50 style="border-width: 1px; padding: 0px; border-style: dashed; border-color: blue;">
+</td>
+</tr>
+<tr>
+<td width=50 height=50 style="border-width: 1px; padding: 0px; border-style: dashed; border-color: blue;">
+</td>
+<td width=50 height=50 style="border-width: 1px; padding: 0px; border-style: dashed; border-color: blue;">
+</td>
+</td>
+</tr>
+</table>
+<br />
+
+### save and close all files ###
+
+### OPTIONAL ###
+### UPLOAD ###
+
+images/map.gif
