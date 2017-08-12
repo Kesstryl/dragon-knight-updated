@@ -10,10 +10,11 @@ Random Boss Mod
 Clans Mod (tables are formatting strangely, will work on layout problems)
 Home Page Mod
 Moving On Maps Mods
+Social Titles Mod
 
 These mods are partially working but unfinished
 
-Social Titles Mod
+
 Friends List Mod
 
 
