@@ -17,5 +17,71 @@ Social Titles Mod
 Friends List Mod
 
 
+Instructions for upgrading other mods
+
+There is a link on the official Dragon Knight site to a "this big ol' fat link right here"
+where you can get additional mods for your game.  Here are a few things you can do
+to begin the update process to get them working with Dragon Knight Updated.
+
+1. At the top of the mod's php page you will want this:
+
+include_once("lib.php);
+
+2. Inside every function, and wherever a query to the database is called, you need:
+
+$check = protectcsfr();
+$link = opendb();
+
+3. inside the beginning parenthesis for every doquery (database query) you need this
+
+$link,
+
+4. wherever there is a mysql call you need to change it to mysqli
+
+example mysql_fetch_array becomes mysqli_fetch_array, and so on.
+
+5. Wherever there is post data:
+
+a. use the protect function to filter all post variables
+
+example:
+
+$charname = protect($_POST['charname']);
+
+b. add this after the other post variables
+
+$token = protect($_POST['token']);
+		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
+
+c. add this right before the html post form:
+
+$token = formtoken();
+		
+d. add this inside the form tags and before the submit submit tags on every post html form.
+
+<input type=\"hidden\" name=\"token\" value=\"$token\" />
+
+or this if it's inside a heredoc (example $page = <<<END)
+
+<input type="hidden" name="token" value="{$token}" />
+
+e. add this wherever the post form finishes executing the script, usually after stuff is
+inserted into the database:
+
+unset($_SESSION['token']);
+
+6.  There will probably be error notices on old code.  You will have to google those
+errors to learn how to fix them as I have done.  If you are a beginner coder, this will be a learning curve.
+If you are an experienced programmer, this should be very easy since all the code is 
+procedural and only uses functions.  If you are experienced with OOP and not procedural, 
+this will be a small learning curve.  I did not set out to update the code to OOP, I only set out
+to update it to be php 5.6 compliant and have enough security for protection from the most
+common types of attacks.  The ground work is laid out to use mysqli prepared statements and better
+forms of security for those who know how to add them.  ~Kesstryl
+
+
+
+
 
 

@@ -1,0 +1,178 @@
+//  ADD CHARACTER SOCIAL STATUS TITLES TO YOUR DRAGON KNIGHT GAME
+
+//  CREATED BY Lawrence B. McDonnell ( AKA: larou IN THE DRAGON KNIGHT FORUMS )
+Rewritten and updated by Kesstryl to use with Dragon Knight Updated 1.1.12
+admin page functions written by Kesstryl
+
+Step 1.
+In phpadmin on your server, insert this in the text field on the SQL tab:
+
+CREATE TABLE IF NOT EXISTS `dk_social` (
+`id` tinyint(2) unsigned NOT NULL auto_increment,
+`title` varchar(20) NOT NULL default '',
+`lowlvl` int(4) NOT NULL default '0',
+`highlvl` int(4) NOT NULL default '0',
+PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+INSERT INTO `dk_social` VALUES
+(1, 'Peasant', 1, 9),
+(2, 'Citizen', 10, 29),
+(3, 'Baron', 30, 49),
+(4, 'Marquis', 50, 69),
+(5, 'Duke', 70, 84),
+(6, 'King', 85, 94),
+(7, 'Emperor', 95, 100);
+
+
+////    ADD THIS TO YOUR dk_users TABLE    ////
+
+ALTER TABLE `dk_users` ADD `title` varchar(30) NOT NULL default '';
+
+
+
+Step 2.
+////    OPEN index.php AND FIND THIS LINE    ////
+
+    $do = explode(":",$_GET["do"]);
+
+////    AND ADD THESE LINES BEFORE THAT LINE    ////
+
+//  START OF SET SOCIAL STATUS
+    if($userrow["level"] <= 9) { $status = 'Peasant'; } 
+    if($userrow["level"] >= 10) { $status = 'Citizen'; } 
+    if($userrow["level"] >= 30) { $status = 'Baron'; } 
+    if($userrow["level"] >= 50) { $status = 'Marquis'; } 
+    if($userrow["level"] >= 70) { $status = 'Duke'; } 
+    if($userrow["level"] >= 85) { $status = 'King'; } 
+    if($userrow["level"] >= 95) { $status = 'Emporer'; } 
+    doquery("UPDATE {{table}} SET status='$status' WHERE id='".$userrow["id"]."' ", "users"); 
+//  END OF SET SOCIAL STATUS
+
+	
+$social = doquery($link, "SELECT title FROM {{table}} WHERE '".$userrow["level"]."' > lowlvl AND '".$userrow["level"]."'< highlvl LIMIT 1", "social");
+$row = mysqli_fetch_assoc($social);
+$title = $row['title'];
+if($userrow['title'] != $title){
+doquery($link, "UPDATE {{table}} SET title='$title' WHERE id = "'.$userrow['id'].'" LIMIT 1","users");
+}
+
+////    CLOSE AND SAVE index.php    ////
+
+
+Step 3. 
+////    OPEN these files from the templates folder: rightnav.php. onlinechar.php, and showchar.php 
+AND ADD THIS LINE WERE EVER IT LOOKS GOOD TO YOU    ////
+
+Status: {{title}}<br>
+
+////    CLOSE AND SAVE rightnav.php    ////
+////    PLAY THE GAME AND HAVE FUN    ////
+
+social status can be created in an array and then developer can use the array keys to store status id in user table
+or make a db table for the status types. db would be better for admins to edit them as they want without touching the program.
+create code for updating social status to include wherever leveling up code happens
+add in how to show status in online char content too in index.php
+
+Step 4.
+
+admin panel
+
+open admin.php in the templates folder, and somehwere in the Game Data links add:
+
+<a href="admin.php?do=titles">Edit Social Titles</a><br />
+
+open admin.php in the regular directory (which is not the templates folder):
+
+Find this:
+ if (isset($_GET["do"])) {
+	
+	$check = protectcsfr();
+	$_GET = array_map('protectarray', $_GET);
+    $do = explode(":",$_GET["do"]);
+    
+    if ($do[0] == "main") { main(); }
+
+add this somewhere after that:
+
+elseif ($do[0] == "titles") { titles(); }
+elseif ($do[0] == "edittitles") { edittitles(); }
+
+
+down the page somewhere wherever it seems logical (such as before spells if you are organizing functions alphabetically,
+add these two functions:
+
+function titles() {
+    
+	$link = opendb();
+    $query = doquery($link, "SELECT id,title FROM {{table}} ORDER BY id", "social");
+    $page = "<b><u>Edit Social Titles</u></b><br />Click a title name to edit it.<br /><br /><table width=\"50%\">\n";
+    $count = 1;
+    while ($row = mysqli_fetch_array($query)) {
+        if ($count == 1) { $page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">".$row["id"]."</td><td style=\"background-color: #eeeeee;\"><a href=\"admin.php?do=edittitles:".$row["id"]."\">".$row["title"]."</a></td></tr>\n"; $count = 2; }
+        else { $page .= "<tr><td width=\"8%\" style=\"background-color: #ffffff;\">".$row["id"]."</td><td style=\"background-color: #ffffff;\"><a href=\"admin.php?do=edittitles:".$row["id"]."\">".$row["title"]."</a></td></tr>\n"; $count = 1; }
+    }
+    if (mysqli_num_rows($query) == 0) { 
+	$page .= "<tr><td width=\"8%\" style=\"background-color: #eeeeee;\">No towns found.</td></tr>\n"; 
+	}
+    $page .= "</table>";
+    admindisplay($page, "Edit Social Titles");
+}
+
+function edittitles($id) {
+    
+	$adtoken = admintoken();
+	$link = opendb();
+	
+    if (isset($_POST["submit"])) {
+        
+		$check = protectcsfr();
+		$_POST = array_map('protectarray', $_POST);
+		extract($_POST, EXTR_SKIP);
+		if ($_POST["adtoken"] != $adtoken) die("no csfr here");
+		$token = protect($_POST['token']);
+		
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
+		
+        $errors = 0;
+        $errorlist = "";
+        if ($title == "") { $errors++; $errorlist .= "Title name is required.<br />"; }
+        if ($lowlvl == "") { $errors++; $errorlist .= "Low level is required.<br />"; }
+        if (!is_numeric($lowlvl)) { $errors++; $errorlist .= "Low level must be a number.<br />"; }
+        if ($highlvl == "") { $errors++; $errorlist .= "High level is required.<br />"; }
+        if (!is_numeric($highlvl)) { $errors++; $errorlist .= "High level must be a number.<br />"; }
+        
+        if ($errors == 0) { 
+            $query = doquery($link, "UPDATE {{table}} SET title='$title',lowlvl='$lowlvl',highlvl='$highlvl' WHERE id='$id' LIMIT 1", "social");
+            unset($_SESSION['token']);
+			admindisplay("Titles updated.","Edit Social Titles");
+        } else {
+            unset($_SESSION['token']);
+			admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Social Titles");
+        }        
+        
+    }   
+        
+    $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "social");
+    $row = mysqli_fetch_array($query);
+
+$token = formtoken();
+	
+$page = <<<END
+<b><u>Edit Towns</u></b><br /><br />
+<form action="admin.php?do=edittitles:$id" method="post">
+<table width="90%">
+<tr><td width="20%">ID:</td><td>{{id}}</td></tr>
+<tr><td width="20%">Title:</td><td><input type="text" name="title" size="30" maxlength="30" value="{{title}}" /></td></tr>
+<tr><td width="20%">Low Level:</td><td><input type="text" name="lowlvl" size="5" maxlength="10" value="{{lowlvl}}" /><br /><span class="small">Positive integer.</span></td></tr>
+<tr><td width="20%">High Level:</td><td><input type="text" name="highlvl" size="5" maxlength="10" value="{{highlvl}}" /><br /><span class="small">Positive integer.</span></td></tr>
+<tr><td><input type="hidden" name="adtoken" value="{$adtoken}" /></td></tr>
+<tr><td><input type="hidden" name="token" value="{$token}" /></td></tr>
+</table>
+<input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
+</form>
+END;
+    
+    $page = parsetemplate($page, $row);
+    admindisplay($page, "Edit Social Titles");
+}
