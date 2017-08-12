@@ -40,14 +40,16 @@ $chancetofight = rand(1,5);
 Alternatively, if you don't want that much fighting and you want to keep the game more vanilla,
 find this: 
 
-	$chancetofight = rand(1,15);
+	$chancetofight = rand(1,10);
     if ($chancetofight == 1) { 
         $action = "currentaction='Fighting', currentfight='1',";
 		
 and after that add this
 
-} elseif ($chancetofight == 5) { 
-    $action = "currentaction='FightingBoss', currentfight='2',";
+	}elseif ($chancetofight == 5) { 
+        $action = "currentaction='Fighting', currentfight='1',";
+	} elseif ($chancetofight == 10) { 
+		$action = "currentaction='FightingBoss', currentfight='2',";
 	
 make sure this code is right after (this was already in the script)
 } else {
