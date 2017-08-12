@@ -39,14 +39,12 @@ Step 2.
 ////    AND ADD THESE LINES BEFORE THAT LINE    ////
 
 //  START OF SET SOCIAL STATUS
-    if($userrow["level"] <= 9) { $status = 'Peasant'; } 
-    if($userrow["level"] >= 10) { $status = 'Citizen'; } 
-    if($userrow["level"] >= 30) { $status = 'Baron'; } 
-    if($userrow["level"] >= 50) { $status = 'Marquis'; } 
-    if($userrow["level"] >= 70) { $status = 'Duke'; } 
-    if($userrow["level"] >= 85) { $status = 'King'; } 
-    if($userrow["level"] >= 95) { $status = 'Emporer'; } 
-    doquery("UPDATE {{table}} SET status='$status' WHERE id='".$userrow["id"]."' ", "users"); 
+$social = doquery($link, "SELECT title FROM {{table}} WHERE '".$userrow["level"]."' > lowlvl AND '".$userrow["level"]."'< highlvl LIMIT 1", "social");
+$row = mysqli_fetch_assoc($social);
+$title = $row['title'];
+if($userrow['title'] != $title){
+	doquery($link, "UPDATE {{table}} SET title='$title' WHERE id = '".$userrow["id"]."' LIMIT 1","users");
+}
 //  END OF SET SOCIAL STATUS
 
 	
