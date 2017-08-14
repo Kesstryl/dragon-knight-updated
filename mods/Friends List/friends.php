@@ -5,17 +5,24 @@ function friends($friendchar) { //this function is currently unused and untested
 	
 global $userrow;
 
+$check = protectcsfr();
 $link = opendb();
 
 if(isset($_POST['add'])) {
 	
+	$token = protect($_POST['token']);
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
 	$time = time();
 	$query = doquery("INSERT INTO {{table}} SET id='', userchar='".$userrow['charname']."', friendchar='".$_POST['friendname']."', date='$time'", "friends");
+	unset($_SESSION['token']);
 	$page.="<center>This player has been added to your Friends List. 	
 	<br /><br /><a href=\"index.php\">CONTINUE</a></center>";
 	}
 	
 elseif(isset($_POST['no'])) {
+$token = protect($_POST['token']);
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
+	unset($_SESSION['token']);
 $page.= <<<END
 <meta http-equiv="refresh" content="2;URL=index.php">
 END;
@@ -26,6 +33,7 @@ else {
 $query = doquery($link, "SELECT * FROM {{table}} WHERE charname='$friendname' LIMIT 1", "users");
 while ($row = mysqli_fetch_array($query)) {
 	$friendname = $row["username"];
+	$token = formtoken();
 	$page .= "<form action=index.php?do=friends:$friendname method=post><br />";
 	$page .= "
 	<center> ADD »</b> into friends list?<br /><br /> ";
@@ -34,7 +42,8 @@ while ($row = mysqli_fetch_array($query)) {
 	<option value='$friendname'>$friendname</option>
 	</select>";
 
-	$page .= "<input type=submit value=add name=add>
+	$page .= "<input type=\"hidden\" name=\"token\" value=\"$token\" />
+	<input type=submit value=add name=add>
 	&nbsp;&nbsp;<input type=submit value=No name=no></form><br />"; 
 	} 
 }
@@ -45,16 +54,22 @@ function remove_friends($friendchar) {
 	
 global $userrow;
 
+$check = protectcsfr();
 $link = opendb();
 
 if(isset($_POST['yes'])) {
 	$time = time();
+	$token = protect($_POST['token']);
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
 	$query = doquery($link, "DELETE FROM {{table}} WHERE friendchar='$friendchar' AND userchar='".$userrow['charname']."'", "friends");
+	unset($_SESSION['token']);
 	$page = "<center>This player has been removed from your Friends List.<br /><br /><a href=\"index.php\">Continue</a></center>";
 }
 
 if(isset($_POST['no'])) {
-
+	$token = protect($_POST['token']);
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
+	unset($_SESSION['token']);
 	header("location:index.php?do=friendslist");
 }
 	
@@ -62,11 +77,13 @@ $page = "Remove Friends";
 $query = doquery($link, "SELECT * FROM {{table}} WHERE charname='$friendchar' LIMIT 1", "users");
 while ($row = mysqli_fetch_array($query)) {
 	$friendchar = $row["charname"];
+	$token = formtoken();
 	$page .= "<form action=index.php?do=remove_friends:$friendchar method=post><br />";
 	$page .= "
 	<center> DELETE » <b>$friendchar</b> from your friends list?<br /><br /> ";
 
-	$page .= "<input type=submit value=YES name=yes>
+	$page .= "<input type=\"hidden\" name=\"token\" value=\"$token\" />
+	<input type=submit value=YES name=yes>
 	<input type=submit value=No name=no></form><br />"; 
 	}
 
@@ -78,12 +95,16 @@ function friendslist() {
 
 global $userrow ;
 
+$check = protectcsfr();
 $link = opendb();
 
 if(isset($_POST['add'])) {
 	
 	$friendname = protect($_POST['friendname']);
 	$time = time();
+	$token = protect($_POST['token']);
+		if ($_SESSION['token'] != $token) { die("Invalid request");}
+		
 	$check = doquery($link, "SELECT * FROM {{table}} WHERE userchar='".$userrow['charname']."'","friends");
 	$friendrow = mysqli_fetch_array($check);
 	$exist = doquery($link, "SELECT charname FROM {{table}} WHERE charname='$friendname' LIMIT 1","users");
@@ -96,6 +117,7 @@ if(isset($_POST['add'])) {
 		die ("No user with that name exists. Return to <a href=index.php?do=friendslist>Friends List</a>");
 	}else{
 	$query = doquery($link, "INSERT INTO {{table}} SET id='', userchar='".$userrow['charname']."', friendchar='$friendname', date='$time'", "friends");
+	unset($_SESSION['token']);
 	$page ="<center>This player has been added to your Friends List. 	
 	<br /><br /><a href=\"index.php\">CONTINUE</a></center>";
 		}
@@ -140,9 +162,11 @@ You do not have any friends in your Friends List."; }
 $page .= "</table>
 </div>";
 $userquery = doquery($link, "SELECT charname FROM {{table}}","users");
+$token = formtoken();
 $page .="Add a friend:</br>
 		<form action=index.php?do=friendslist method=post><br />
 		<input type=text name=friendname value=''></br>
+		<input type=\"hidden\" name=\"token\" value=\"$token\" />
 		<input type=submit value=add name=add></form>";
 		
 display($page, "Friends List");
