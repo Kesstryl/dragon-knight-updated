@@ -1,0 +1,112 @@
+
+MOD BY Element
+IF YOU HAVE PROBLEM 
+YOU CAN CONTACT ME WITH MY EMAIL
+element_system@hotmail.fr
+http://element.heberg-discount.fr.nf | http://www.dbdreams.net
+
+translated and edited by Kesstryl to work with Dragon Knight Updated.
+mail function added using code from the Mail Mod.  Text input for adding friends added by Kesstryl.
+
+
+			Needs Mail Mod in order to send friends private messages
+
+SQL :
+
+CREATE TABLE `dk_friends` (
+`id` int(6) NOT NULL auto_increment,
+`friendchar` text NOT NULL,
+`userchar` text NOT NULL,
+`date` text NOT NULL,
+PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+
+
+OPEN Index.php and somewhere right before // Misc functions. ADD :
+
+ 
+	//friends functions
+	elseif ($do[0] == "friendslist") {include('friends.php'); friendslist(); }
+	elseif ($do[0] == "friends") { include('friends.php'); friends($do[1]); }
+	elseif ($do[0] == "remove_friends") { include('friends.php'); remove_friends($do[1]); }
+	elseif ($do[0] == "mailfriend") { include('friends.php'); mailfriend($do[1]); }
+
+	
+	
+in templates/leftnav.php add:
+
+<a href="index.php?do=friendslist">Friends</a></br>
+
+
+
+IN templates/onlinechar.php add :
+note - for some reason this line breaks the layout and doesn't display, and should only be used if you know how to fix it ~Kesstryl
+
+<a href="index.php?do=friends:{{charname}}>Add this player in my List Friends</a>
+
+
+
+
+
+
+
+
+NOTES - 
+Posted by masterofollies on 07.05.2007
+It gives me a blank page. Like the templates and everything is there except the middle is just blank.
+
+Anyone have a patch for this? The link I used to access the page is:
+a href="index.php?do=friends
+Posted by SmartCat on 07.06.2007
+Lol?
+Posted by element on 07.07.2007
+
+
+In templates/onlinechar.php
+
+<a href="index.php?do=friends:{{charname}}>Add this player in my List Friends</a>
+
+;)
+
+Test : index.php?do=friends:IDPLAYER
+Posted by masterofollies on 07.07.2007
+Thanks, that was the only part left out of the script on what to do last. :P
+Posted by masterofollies on 07.07.2007
+More problems. It only allows you to add yourself. I have 220 registered players and it only says to add my own name. 
+
+Then when I click add I get this,
+Unknown column 'date' in 'field list'
+Posted by element on 07.07.2007
+Afflicted… 
+Add a field dates in dk_friends or replaces :
+
+$query = doquery("SELECT date,friendchar FROM dkm_comments WHERE userchar='".$userrow['charname']."'", "friends");
+
+By :
+
+$query = doquery("SELECT friendchar FROM dkm_comments WHERE userchar='".$userrow['charname']."'", "friends");
+
+And :
+$query = doquery("INSERT INTO dkm_comments SET id='', friendchar='".$_POST['friendchar']."', userchar='".$userrow['charname']."'", date='$time'", "friends");
+
+With :
+
+$query = doquery("INSERT INTO dkm_comments SET id='', friendchar='".$_POST['friendchar']."', userchar='".$userrow['charname']."', date='$time'"", "friends");
+
+Really sorry for the errors but if not it goes very well 
+
+
+Posted by element on 07.07.2007
+I update this MOD :D
+Posted by masterofollies on 07.07.2007
+Now I get this
+
+Table 'rodgameo_game.dkm_comments' doesn't exist
+Posted by masterofollies on 07.07.2007
+I went ahead and got rid of the entire thing, I fixed 2 things and more errors kept poping up. Oh well
+Posted by element on 07.08.2007
+
+To remove the table dk_friends and réinstall the MOD: http://dragon.se7enet.com/mods/uploads/maj.txt
+
+If not, you can add me in my contacts msn: element_system@hotmail.fr

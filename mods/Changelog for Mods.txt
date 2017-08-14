@@ -11,11 +11,16 @@ Clans Mod (tables are formatting strangely, will work on layout problems)
 Home Page Mod
 Moving On Maps Mods
 Social Titles Mod
+Friends List Mod
 
 These mods are partially working but unfinished
 
 
-Friends List Mod
+
+Possibly more mods to come, if you get tired of
+waiting, you can update your own mods by following
+the instructions below:
+
 
 
 Instructions for upgrading other mods
