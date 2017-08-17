@@ -106,7 +106,7 @@ function dotown() { // Spit out the main town page.
         $onlinequery = doquery($link, "SELECT * FROM {{table}} WHERE UNIX_TIMESTAMP(onlinetime) >= '".(time()-600)."' ORDER BY charname", "users");
         $townrow["whosonline"] = "<table width=\"95%\"><tr><td class=\"title\">Who's Online</td></tr><tr><td>\n";
         $townrow["whosonline"] .= "There are <b>" . mysqli_num_rows($onlinequery) . "</b> user(s) online within the last 10 minutes: ";
-        while ($onlinerow = mysqli_fetch_array($onlinequery)) { $townrow["whosonline"] .= "<a href=\"index.php?do=onlinechar:".$onlinerow["id"]."\">".$onlinerow["charname"]."</a>" . ", "; }
+        while ($onlinerow = mysqli_fetch_array($onlinequery)) { $townrow["whosonline"] .= "<a href=\"index.php?do=onlinechar:".$onlinerow["charname"]."\">".$onlinerow["charname"]."</a>" . ", "; }
         $townrow["whosonline"] = rtrim($townrow["whosonline"], ", ");
         $townrow["whosonline"] .= "</td></tr></table>\n";
     } else { $townrow["whosonline"] = ""; }
@@ -205,12 +205,12 @@ function showchar() {
     
 }
 
-function onlinechar($id) {
+function onlinechar($charname) {
     
     global $controlrow;
 	$check = protectcsfr();
 	$link = opendb();
-    $userquery = doquery($link, "SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "users");
+    $userquery = doquery($link, "SELECT * FROM {{table}} WHERE charname='$charname' LIMIT 1", "users");
     if (mysqli_num_rows($userquery) == 1) { $userrow = mysqli_fetch_array($userquery); } else { display("No such user.", "Error"); }
     
     // Format various userrow stuffs.

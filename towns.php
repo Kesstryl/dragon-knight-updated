@@ -410,7 +410,7 @@ function topten() { // Top 10 list, based on user levels.
     $topquery = doquery($link, "SELECT * FROM {{table}} ORDER BY level DESC LIMIT 10", "users");
     $rank = 1;
     while ($toprow = mysqli_fetch_array($topquery)) { 
-        $page .= "<tr><td width=\"10%\"><b>$rank</b></td><td width=\"50\"><a href=\"index.php?do=onlinechar:".$toprow["id"]."\">".$toprow["charname"]."</a></td><td width=\"20%\">Level: <b>".$toprow["level"]."</b></td><td width=\"20%\">Exp: <b>".number_format($toprow["experience"])."</b></td></tr>\n";
+        $page .= "<tr><td width=\"10%\"><b>$rank</b></td><td width=\"50\"><a href=\"index.php?do=onlinechar:".$toprow["charname"]."\">".$toprow["charname"]."</a></td><td width=\"20%\">Level: <b>".$toprow["level"]."</b></td><td width=\"20%\">Exp: <b>".number_format($toprow["experience"])."</b></td></tr>\n";
         $rank++;
     }
     $page .= "</table>\n<br /><br />\n";
