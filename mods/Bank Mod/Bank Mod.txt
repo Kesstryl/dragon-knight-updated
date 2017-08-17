@@ -1,0 +1,59 @@
+The Bank mod was made by Gary Schilling and the Send Gold was made 
+by JamesXm and it was fused together by Horsley.
+
+Updated by Kesstryl to use with Dragon Knight Updated 1.1.12
+
+
+Step 1.
+Go to phymyadmin and insert this into the SQL tab of your users table:
+
+ALTER TABLE `dk_users` ADD `bank` MEDIUMINT(7) UNSIGNED NOT NULL DEFAULT 0
+
+
+Step 2.
+add this in the long list of do functions in index.php
+
+elseif ($do[0] == "bank") { include('bank.php'); bank(); }
+
+
+Step 3.
+Open templates/towns.php and find this line:
+
+<li /><a href="index.php?do=maps">Buy Maps</a>
+
+After that add this line:
+
+<li /><a href="index.php?do=bank">Go to the Bank</a>
+
+
+Step 4.
+make sure bank.php is in your game directory
+
+
+step 5.
+This will add a Bank section in your edit users.
+
+In Admin.php in your route directory
+
+Find in the users function (where the big doquery database insert is):
+
+gold="$gold",
+
+And replace with:
+
+gold="$gold", bank="$bank",
+
+
+Still in admin.php 
+
+Find in the form tags:
+
+<tr><td width="20%">Gold:</td><td><input type="text" name="gold" size="10" maxlength="8" value="{{gold}}" /></td></tr>
+
+Replace with:
+
+<tr><td width="20%">Gold:</td><td><input type="text" name="gold" size="10" maxlength="8" value="{{gold}}" /></td></tr>
+<tr><td width="20%">Bank:</td><td><input type="text" name="bank" size="10" maxlength="8" value="{{bank}}" /></td></tr>
+
+
+By Pezmc

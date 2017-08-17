@@ -12,6 +12,7 @@ Home Page Mod
 Moving On Maps Mods
 Social Titles Mod
 Friends List Mod
+Bank Mod
 
 These mods are partially working but unfinished
 
@@ -20,7 +21,6 @@ These mods are partially working but unfinished
 Possibly more mods to come, if you get tired of
 waiting, you can update your own mods by following
 the instructions below:
-
 
 
 Instructions for upgrading other mods
