@@ -59,7 +59,7 @@ copy and paste this code into the text field and click go.
 
 ------------------------------------------------------------
 CREATE TABLE `dk_clan` (
-  `id` mediumint(5) NOT NULL auto_increment,
+  `id` mediumint(5) unsigned NOT NULL auto_increment,
   `name` varchar(50) default NULL,
   `logo` varchar(100) NOT NULL default 'images/logo.gif',
   `message` varchar(50) NOT NULL,
@@ -77,7 +77,7 @@ CREATE TABLE `dk_clanbabble` (
 ) ENGINE=InnoDB;
 
 ALTER TABLE `dk_users` ADD `clan` MEDIUMINT( 5 ) NOT NULL DEFAULT '0',
-ADD `clanjoin` MEDIUMINT( 5 ) NOT NULL DEFAULT '0';
+ADD `clanjoin` MEDIUMINT( 5 ) NOT NULL DEFAULT '0',
 -------------------------------------------------------------
 
 Thats it. You can now start modifying and adding stuff to this mod. Some good ideas are:

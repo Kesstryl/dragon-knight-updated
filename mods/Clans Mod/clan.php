@@ -57,7 +57,7 @@ $page ="<br /><table><tr class=\"nimekiri\"><td>Welcome, leader of $clanname  !<
     $page2["clancontent"] = $page;
 	$display = gettemplate("clan");
     $display = parsetemplate($display, $page2);
-	display($display,"Clan's");
+	display($display,"Clans");
 }
 
 function newmembers(){ //Accept new members
@@ -80,6 +80,8 @@ $page="<br />Here is a list of all players, who wish to join this clan.<br /><br
    while ($list = mysqli_fetch_array($clanlistquery)) {
 	$page .="<tr class=\"nimekiri\"><td>".$list["charname"]."</td><td>".$list["level"]."</td><td>".$list["gold"]."</td><td><form action=\"index.php?do=clannewbies\" method=\"post\"><input type=\"submit\" name=\"jah\" value=\"Yes\"> / <input type=\"hidden\" name=\"token\" value=\"$token\" /><input type=\"submit\" name=\"ei\" value=\"No\"><input type=\"hidden\" name=\"mangija\" value=\"".$list["id"]."\"></td></tr>";
 }
+$page .="</table><br />";
+
 if(isset($_POST["jah"])){
 	$check = protectcsfr();
 	$_POST = array_map('protectarray', $_POST);
@@ -105,12 +107,10 @@ if(isset($_POST["ei"])){
 		
 }
 
-$page .="</table><br />";
-
     $page2["clancontent"] = $page;
 	$display = gettemplate("clan");
     $display = parsetemplate($display, $page2);
-	display($display,"Clan's");
+	display($display,"Clans");
 }
 
 
@@ -135,6 +135,8 @@ $page="<br />Choose your victims, who will be thrown out of the clan.<br /><br /
    while ($list = mysqli_fetch_array($clanlistquery)) {
 	$page .="<tr class=\"nimekiri\"><td>".$list["charname"]."</td><td>".$list["level"]."</td><td>".$list["gold"]."</td><td><form action=\"index.php?do=clankick\" method=\"post\"><input type=\"hidden\" name=\"token\" value=\"$token\" /><input type=\"submit\" name=\"jah\" value=\"Kick\"> <input type=\"hidden\" name=\"mangija\" value=\"".$list["id"]."\"></td></tr>";
 }
+$page .="</table><br />";
+
 if(isset($_POST["jah"])){
 	$check = protectcsfr();
 	$_POST = array_map('protectarray', $_POST);
@@ -155,17 +157,14 @@ if(isset($_POST["jah"])){
 	}
 }
 
-
-$page .="</table><br />";
-
     $page2["clancontent"] = $page;
 	$display = gettemplate("clan");
     $display = parsetemplate($display, $page2);
-	display($display,"Clan's");
+	display($display,"Clans");
 }
 
 
-function clanjoin(){ //Join a clan
+function clanjoin($do){ //Join a clan
  
  	global $userrow;
 	
@@ -175,7 +174,7 @@ function clanjoin(){ //Join a clan
     $clanrow = mysqli_fetch_array($clanquery);
     $clanname = $clanrow["name"]; 
 	$clanid = $clanrow["id"];
-
+	
 if($userrow["clan"] != "0" && $userrow["clanjoin"] == "0") { header("Location: index.php?do=clan"); die();	}
 
 if(isset($_POST['Join'])){
@@ -199,36 +198,43 @@ if(isset($_POST['Cancel'])){
 	unset($_SESSION['token']);
 }
 
-$page = "You are not yet a member of any of the clan's. Here is a list of all the clan's in the game. Please choose one to join.<br /><br /><table><tr class=\"title\"><td>Clan's name</td><td>Members</td><td>Message to joiners</td><td>Join</td></tr>";
+$page = "You are not yet a member of any of the clan's. Here is a list of all the clan's in the game. Please choose one to join.<br /><br />";
+$page .= "<table><tr class=\"title\"><td>Clan's name</td><td>Members</td><td>Message to joiners</td><td>Join</td></tr>";
+$membersquery= doquery($link, "SELECT clan FROM {{table}} WHERE id='".$userrow['id']."' LIMIT 1", "users");
+$members= mysqli_num_rows($membersquery);
+
+	if($userrow["clan"] > 0){
+	$token = formtoken();
+	$page .= "Application pending";
+	$page .="<br /><br /><form action=\"index.php?do=clanmembers\" method=\"post\"><input type=\"hidden\" name=\"token\" value=\"$token\" /><input type=\"submit\" name=\"Cancel\" value=\"Cancel Application\"></form><br />";
+	
+	}else{
 
 	$clans = doquery($link, "SELECT * FROM {{table}}", "clan");
 	while($list = mysqli_fetch_array($clans)) {
 		$id = $list["id"];
 		$name = $list['name'];
 		$message = $list['message'];
-		$membersquery= doquery($link, "SELECT id FROM {{table}} WHERE clan='$id' LIMIT 1", "users");
-	
-		$members= mysqli_num_rows($membersquery);
-		if($userrow["clan"] == $list["id"]){
-		$page = "Application pending";
-		$page .="<br /><br /><form action=\"index.php?do=clanmembers\" method=\"post\"><input type=\"hidden\" name=\"token\" value=\"$token\" /><input type=\"submit\" name=\"Cancel\" value=\"Cancel Application\"></form><br />";
-		}else{
-	$token = formtoken();
-	
-	$page .="<tr class=\"nimekiri\"><td>$name</td><td>$members</td><td>$message</td>";
-	$page .= "<td><form action=\"index.php?do=clanjoin\" method=\"post\"><input type=\"hidden\" name=\"token\" value=\"$token\" /><input type=\"submit\" name=\"Join\" value=\"Join\"> <input type=\"hidden\" name=\"clanid\" value=\"".$list["id"]."\></form></td></tr></br></br>";
-		}
-	
-	}
 		
-$page .="<tr class=\"nimekiri\"><td colspan=\"4\" align=\"center\"><a href=\"index.php?do=clancreate\">Found a NEW clan!</a></td></tr></table><br /><br />";
+		$page .="<tr class=\"nimekiri\"><td>$name</td><td>$members</td><td>$message</td><td><a href=\"index.php?do=clanjoin:".$list["id"]."\">Join</a><td></tr>";
+		}	
+	}
+	
+if($do != ""){
+$do=protect($do);
+if(!is_numeric($do)){die();}	
+doquery($link, "UPDATE {{table}} SET clan='$do', clanjoin='1' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+$page .= "You have submitted your application to the clan.  You may go back to the <a href=\"index.php?do=clanjoin\">Clans page</a>";
+}
+	
+$page .="<br /><tr class=\"nimekiri\"><td colspan=\"4\" align=\"center\"><a href=\"index.php?do=clancreate\">Found a NEW clan!</a></td></tr></table><br /><br />";
 $page .="<a href=\"index.php\">Back to Town</a><br />";
 
 
     $page2["clancontent"] = $page;
 	$display = gettemplate("clan");
     $display = parsetemplate($display, $page2);
-	display($display,"Clan's");
+	display($display,"Join Clan");
 }
 
 
@@ -263,7 +269,7 @@ if(isset($_POST['Leave'])){
 $page= "<br />Here is the list of all members of this clan.<br /><br /><table width=\"50%\" class=\"title\"><tr><td>Name</td><td>Level</td><td>Gold</td></tr>";
 $clanlistquery = doquery($link, "SELECT id,charname,level,gold FROM {{table}} WHERE clan='$clanid' ", "users");
    while ($list = mysqli_fetch_array($clanlistquery)) {
-	$page .="<tr class=\"nimekiri\"><td><a href=\"index.php?do=onlinechar:".$list["id"]."\">".$list["charname"]."</a></td><td>".$list["level"]."</td><td>".$list["gold"]."</td></tr>";
+	$page .="<tr class=\"nimekiri\"><td><a href=\"index.php?do=onlinechar:".$list["charname"]."\">".$list["charname"]."</a></td><td>".$list["level"]."</td><td>".$list["gold"]."</td></tr>";
 	}
 	$token = formtoken();
 	$page .="<br /><br /><tr><td><form action=\"index.php?do=clanmembers\" method=\"post\"><input type=\"hidden\" name=\"token\" value=\"$token\" /><input type=\"submit\" name=\"Leave\" value=\"Leave Clan\"></form></td></tr><br />";
@@ -327,7 +333,7 @@ $page .="<a href=\"index.php\">Back to Town</a><br />";
     $page2["clancontent"] = $page;
 	$display = gettemplate("clan");
     $display = parsetemplate($display, $page2);
-	display($display,"Clan's");
+	display($display,"Clans");
 }
 
 
