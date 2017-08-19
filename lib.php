@@ -1,5 +1,5 @@
 <?php // lib.php :: Common functions used throughout the program.
-
+ini_set("session.cookie_httponly", 1);
 session_start();
 
 $starttime = getmicrotime();
@@ -93,7 +93,7 @@ function protectcsfr() {
 	include('config.php');
 		extract($dbsettings, EXTR_SKIP);
 		$safe = $safeserver;
-		$host = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
+		$host = @parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
 		if ($safe != $host && isset($_SERVER['HTTP_REFERER'])) die("invalid url");
 }
 

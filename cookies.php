@@ -25,7 +25,7 @@ function checkcookies() {
         // If we've gotten this far, cookie should be valid, so write a new one.
         $newcookie = implode(" ",$theuser);
         if ($theuser[2] == 1) { $expiretime = time()+604800; } else { $expiretime = 0; }
-        setcookie ("dkgame", $newcookie, $expiretime, "/", "", 0, true);
+        setcookie ("dkgame", $newcookie, $expiretime, "/", "", false, true);
         $onlinequery = doquery($link, "UPDATE {{table}} SET onlinetime=NOW() WHERE id='$theuser[0]' LIMIT 1", "users");
         
     }

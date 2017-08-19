@@ -43,7 +43,7 @@ function login() {
 		$query = doquery($link, "UPDATE {{table}} SET `random`='$itsme' WHERE `username`='$username' LIMIT 1", "users") or die(mysqli_error($link));		
 		$hashme = md5($itsme);
 		$cookie = ($row["id"]) . " " .$hashme. " " . $rememberme;
-        setcookie("dkgame", $cookie, $expiretime, "/", "", 0, true);
+        setcookie("dkgame", $cookie, $expiretime, "/", "", false, true);
 		unset($_SESSION['token']);
 		$_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
 		$_SESSION['me'] = sha1($itsme);
