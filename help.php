@@ -1,4 +1,4 @@
-<?php 
+<?php
 include('lib.php');
 $check = protectcsfr();
 $link = opendb();
@@ -10,7 +10,7 @@ ob_start("ob_gzhandler");
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title><? echo $controlrow["gamename"]; ?> Help</title>
+<title><?php echo $controlrow["gamename"]; ?> Help</title>
 <style type="text/css">
 body {
   background-image: url(images/background.jpg);
@@ -71,7 +71,7 @@ a:hover {
 </head>
 <body>
 <a name="top"></a>
-<h1><? echo $controlrow["gamename"]; ?> Help</h1>
+<h1><?php echo $controlrow["gamename"];; ?> Help</h1>
 [ <a href="index.php">Return to the game</a> ]
 
 <br /><br /><hr />
@@ -121,7 +121,7 @@ access to, the speed with which you level up, and the amount of HP/MP/strength/d
 is a basic outline of each of the character classes. For more detailed information about the characters, please
 view the Levels table at the bottom of this page. Also, note that the outline below refers to the stock class setup
 for the game. If your administrator has used his/her own class setup, this information may not be accurate.<br /><br />
-<b><? echo $controlrow["class1name"]; ?></b>
+<b><?php echo $controlrow["class1name"]; ?></b>
 <ul>
 <li />Fast level-ups
 <li />High hit points
@@ -134,7 +134,7 @@ for the game. If your administrator has used his/her own class setup, this infor
 <li />3 +defense spells
 <li />0 +attack spells
 </ul>
-<b><? echo $controlrow["class2name"]; ?></b>
+<b><?php echo $controlrow["class2name"]; ?></b>
 <ul>
 <li />Medium level-ups
 <li />Medium hit points
@@ -147,7 +147,7 @@ for the game. If your administrator has used his/her own class setup, this infor
 <li />3 +defense spells
 <li />3 +attack spells
 </ul>
-<b><? echo $controlrow["class3name"]; ?></b>
+<b><?php echo $controlrow["class3name"]; ?></b>
 <ul>
 <li />Slow level-ups
 <li />Medium hit points
@@ -165,16 +165,16 @@ for the game. If your administrator has used his/her own class setup, this infor
 <br /><br /><hr />
 
 <h3><a name="difficulties"></a>Difficulty Levels</h3>
-<i><? echo $controlrow["gamename"]; ?></i> includes the ability to play using one of three difficulty levels.
+<i><?php echo $controlrow["gamename"]; ?></i> includes the ability to play using one of three difficulty levels.
 All monster statistics in the game are set at a base number. However, using a difficulty multiplier, certain statistics
 are increased. The amount of hit points a monster has goes up, which means it will take longer to kill. But the amount
 of experience and gold you gain from killing it also goes up. So the game is a little bit harder, but it is also more
 rewarding. The following are the three difficulty levels and their statistic multiplier, which applies to the monster's
 HP, experience drop, and gold drop.
 <ul>
-<li /><? echo $controlrow["diff1name"] . ": <b>" . $controlrow["diff1mod"] . "</b>"; ?>
-<li /><? echo $controlrow["diff2name"] . ": <b>" . $controlrow["diff2mod"] . "</b>"; ?>
-<li /><? echo $controlrow["diff3name"] . ": <b>" . $controlrow["diff3mod"] . "</b>"; ?>
+<li /><?php echo $controlrow["diff1name"] . ": <b>" . $controlrow["diff1mod"] . "</b>"; ?>
+<li /><?php echo $controlrow["diff2name"] . ": <b>" . $controlrow["diff2mod"] . "</b>"; ?>
+<li /><?php echo $controlrow["diff3name"] . ": <b>" . $controlrow["diff3mod"] . "</b>"; ?>
 </ul>
 [ <a href="#top">Top</a> ]
 
@@ -205,7 +205,7 @@ administrator, a list of players who have been online recently, and the Babble B
 
 <h3><a name="exploring"></a>Playing The Game: Exploring & Fighting</h3>
 Once you're done in town, you are free to start exploring the world. Use the compass buttons on the left status panel to move around.
-The game world is basically a big square, divided into four quadrants. Each quadrant is <? echo $controlrow["gamesize"]; ?> spaces
+The game world is basically a big square, divided into four quadrants. Each quadrant is <?php echo $controlrow["gamesize"]; ?> spaces
 square. The first town is usually located at (0N,0E). Click the North button from the first town, and now you'll be at (1N,0E).
 Likewise, if you now click the West button, you'll be at (1N,1W). Monster levels increase with every 5 spaces you move outward 
 from (0N,0E).<br /><br />
