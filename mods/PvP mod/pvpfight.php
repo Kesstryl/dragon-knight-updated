@@ -29,18 +29,18 @@ elseif ($_POST['bet'] < "0") { display("ERROR. Bet has to be bigger than 0.<br /
 elseif ($_POST['bet'] == "0") { display("ERROR. Bet has to be bigger than 0.<br /><a href=\"index.php?do=pvpfight\">Go back</a>", "ERROR"); die(); }
 elseif ($_POST['enemy'] == "") { display("Wrong charactername<br><a href=\"index.php?do=pvpfight\">Go back</a>", "ERROR"); die(); }
 elseif ($_POST['enemy'] == $userrow['charname']) { display("You can't challenge your self <br><a href=\"index.php?do=pvpfight\">Go back</a>", "ERROR"); die(); }
-
 elseif ($_POST['bet'] > $sum) { display("Your Rival doesn't have enough money to match your bet!<br /><a href=\"index.php?do=pvpfight\">Go back</a>", "ERROR");
-
 
 } else {
 $newgold2 = $userrow["gold"] - $_POST['bet'];
 $fightlvl = $userrow["strength"] + $userrow["dexterity"]; 
 doquery($link, "INSERT INTO {{table}} SET id='', challenger='".$userrow["charname"]."', bet='".$_POST['bet']."', receiver='".$row["charname"]."', fightlvl='$fightlvl'", "pvp");
-
+doquery($link, "INSERT INTO {{table}} SET UserFrom='".$userrow["charname"]."', UserTo='".$row["charname"]."', Subject='You Have a PVP Challenge', Message='You have been challenged by ".$userrow["charname"]."', STATUS='unread', SentDate=NOW()", "mail");
 doquery($link, "UPDATE {{table}} SET gold='$newgold2' WHERE id='".$userrow["id"]."' LIMIT 1", "users"); 
 unset($_SESSION['token']);
-$page = "Challenge sent!<a href=\"index.php\">Go to town.</a>"; } } 
+$page = "Challenge sent!<a href=\"index.php\">Go to town.</a>"; 
+	} 
+} 
 else {
 $token = formtoken();
 $maxbet = $userrow["gold"];
@@ -92,10 +92,9 @@ $pvpquery = doquery($link, "SELECT * FROM {{table}} WHERE charname='".$row["chal
 $pvprow = mysqli_fetch_assoc($pvpquery); // it is your rivals query...do not change it
 
 if($row["fightlvl"] > $userrow["fightlvl"]){   //you lose
- $page = '<table><tr><td><img src=\"images/classes/'.$userrow["charclass"].'.jpg\"></td><td>V.S</td><td><img src=\"images/classes/'.$row["challenger"].'.jpg\"></td></tr>';
- $page .= '<tr>'.$userrow["charname"].'</td><td></td><td>'.$row["challenger"].'</td></tr><tr></tr>';
- $page .= '<tr><td>What a Pitty, you lose!</td></tr>';
- $page .= '<tr><td>You lost this challenge. You lost $'.$row["bet"].'</tr></td></table>';
+ $page = "<table><td><img src=\"images/classes/".$userrow['charclass'].".jpg\">".$userrow['charname']."</td><td>V.S</td><td><img src=\"images/classes/".$pvprow['charclass'].".jpg\">".$row['challenger']."</td></tr>";
+ $page .= "<tr><td>What a Pitty, you lose!</td></tr>";
+ $page .= "<tr><td>You lost this challenge. You lost $".$row["bet"]." You can now <a href=\"index.php\">return to town.</a></tr></td></table>";
  
  $auto = "Automessage PvP";
 $win = $row["bet"] * 2;
@@ -114,9 +113,8 @@ doquery($link, "DELETE FROM {{table}} WHERE id='$id'", "pvp");
  }
  
  elseif($row["fightlvl"] == $userrow["fightlvl"] || $pvprow["fightlvl"] == $userrow["fightlvl"]){   //draw
- $page = '<table><tr><td><img src=\"images/classes/'.$userrow["charclass"].'.jpg\"></td><td>V.S</td><td><img src=\"images/classes/'.$row["challenger"].'.jpg\"></td></tr>';
- $page .= '<tr>'.$userrow["charname"].'</td><td></td><td>'.$row["challenger"].'</td></tr>';
- $page .= '<tr></tr><tr><td>Draw!</td></tr></table>';
+ $page = "<table><td><img src=\"images/classes/".$userrow['charclass'].".jpg\">".$userrow['charname']."</td><td>V.S</td><td><img src=\"images/classes/".$pvprow['charclass'].".jpg\">".$row['challenger']."</td></tr>";
+ $page .= "<tr></tr><tr><td>Draw!  Nobody won!  You can now <a href=\"index.php\">return to town.</a></td></tr></table>";
 
 ///GIVE Challenger BACK HIS GOLD
 $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$id'", "pvp");
@@ -139,10 +137,9 @@ doquery($link, "DELETE FROM {{table}} WHERE id='$id'", "pvp");
 }
 
 elseif($pvprow["fightlvl"] < $userrow["fightlvl"]) {  //you won
-$page = '<table><tr><td><img src=\"images/classes/'.$userrow["charclass"].'.jpg\'></td><td>V.S</td><td><img src=\"images/classes/'.$row["challenger"].'.jpg\"></td></tr>';
-  $page .= '<tr>'.$userrow["charname"].'</td><td></td><td>'.$row["challenger"].'</td></tr>';
-  $page .= '<tr></tr><tr><td>You have WON this challenge!!</td></tr>';
-  $page .= '<tr><td>You won! You got $'.$row["bet"].'</tr></td></table>';
+  $page = "<table><td><img src=\"images/classes/".$userrow['charclass'].".jpg\"></td><td>V.S</td><td><img src=\"images/classes/".$pvprow['charclass'].".jpg\"></td></tr>";
+  $page .= "<tr></tr><tr><td>You have WON this challenge!!</td></tr>";
+  $page .= "<tr><td>You won! You got $".$row['bet']."  You can now <a href=\"index.php\">return to town.</a></tr></td></table>";
 
 $win = $row["bet"] * 2;
 $title = "Challenge defeat";
