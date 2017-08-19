@@ -1,4 +1,5 @@
 <?php
+header("Set-Cookie: hidden=value; httpOnly");
 $template = <<<THEVERYENDOFYOU
 <head>
 <title>{{title}}</title>
