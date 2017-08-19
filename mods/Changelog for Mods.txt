@@ -4,7 +4,7 @@ These mods are finished and fully tested to be working with Dragon Knight Update
 
 Mail Mod
 Quest Creator Mod
-PVP Mod (Class Images mod is still not working with PvP Mod though)
+PVP Mod 
 Class Images Mod
 Random Boss Mod
 Clans Mod 
