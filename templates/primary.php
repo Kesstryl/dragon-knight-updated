@@ -2,6 +2,7 @@
 header("Set-Cookie: hidden=value; httpOnly");
 $template = <<<THEVERYENDOFYOU
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>{{title}}</title>
 <style type="text/css">
 body {
@@ -68,6 +69,10 @@ winpops=window.open(popurl,"","width=210,height=500,scrollbars")
 function openmappopup(){
 var popurl="index.php?do=showmap"
 winpops=window.open(popurl,"","width=520,height=520,scrollbars")
+}
+function openquestlogpopup(){
+var popurl="index.php?do=questlog"
+winpops=window.open(popurl,"","width=210,height=500,scrollbars")
 }
 </script>
 </head>
