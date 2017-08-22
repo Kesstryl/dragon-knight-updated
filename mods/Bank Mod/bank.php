@@ -26,9 +26,8 @@ function bank() {
 					$newbank = $userrow['bank'] - intval($gold);
 					doquery($link, "UPDATE {{table}} SET gold='$newgold' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
 					doquery($link, "UPDATE {{table}} SET bank='$newbank' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
-					$page = "You withdrew $gold gold!";
-					$page .= "<br />You may go back to the <a href=index.php?do=bank>bank</a> or the <a href=index.php>town</a>";
 					 unset($_SESSION['token']);
+					 header ("location: index.php?do=bank");
 				}
 
 			} 
@@ -48,9 +47,8 @@ function bank() {
 					$newbank = $userrow['bank'] + intval($gold);
 					doquery($link, "UPDATE {{table}} SET gold='$newgold' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
 					doquery($link, "UPDATE {{table}} SET bank='$newbank' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
-					$page = "You deposited $gold gold!";
-					$page .= "<br />You may go back to the <a href=index.php?do=bank>bank</a> or the <a href=index.php>town</a>";
 					 unset($_SESSION['token']);
+					 header ("location: index.php?do=bank");
 				}
 			}
 		
