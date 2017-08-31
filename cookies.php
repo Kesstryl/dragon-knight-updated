@@ -9,10 +9,8 @@ function checkcookies() {
     if (isset($_COOKIE["dkgame"])) {
         
 		if($_SESSION['user_agent'] != $_SERVER['HTTP_USER_AGENT']){
-		header("Location: login.php?do=login"); die(); 
+		echo"There was a problem with your cookies, please <a href=login.php?do=login>Log In </a>again"; die(); 
 		}
-        // COOKIE FORMAT:
-        // {ID} {USERNAME} {PASSWORDHASH} {REMEMBERME}
         $theuser = explode(" ",$_COOKIE["dkgame"]);
 		$link = opendb();
         $query = doquery($link, "SELECT * FROM {{table}} WHERE id='$theuser[0]'", "users");
