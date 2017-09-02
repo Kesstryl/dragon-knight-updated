@@ -88,6 +88,7 @@ function reply() {
 	$link = opendb();
 	$content = protect($_POST['content']);
 	$parent = protect($_POST['parent']);
+	$title = protect($_POST['title']);
 	$token = protect($_POST['token']);
 		
 	if ($_SESSION['token'] != $token) { die("Invalid request");}
