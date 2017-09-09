@@ -658,7 +658,7 @@ CREATE TABLE IF NOT EXISTS `$users` (
   `password` varchar(64) NOT NULL default '',
   `email` varchar(100) NOT NULL default '',
   `verify` varchar(8) NOT NULL default '0',
-  `random` VARCHAR(64) NOT NULL,
+  `random` VARCHAR(64) NOT NULL default '',
   `charname` varchar(30) NOT NULL default '',
   `regdate` datetime NOT NULL default '0000-00-00 00:00:00',
   `onlinetime` datetime NOT NULL default '0000-00-00 00:00:00',
