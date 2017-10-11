@@ -23,7 +23,7 @@ function login() {
         $username = protect($_POST['username']);
         $pass = protect($_POST['password']);
 		$token = protect($_POST['token']);
-		if ($_SESSION['token'] != $token) { die("Invalid request");}
+		if ($_SESSION['token'] != $token) { die("Invalid request, try <a href=login.php?do=login>logging in</a> again.");}
 	
 		if($_SESSION['loginCount']>=1){
 			header("Location: login.php?do=nobrute");
