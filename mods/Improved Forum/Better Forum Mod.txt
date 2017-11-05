@@ -1,0 +1,72 @@
+Not sure who the original author is, edited and updated by Kesstryl
+forum type tags created by Kesstryl
+
+step1: replace forum.php with included forum.php script
+
+step2: in admin.php add:
+
+    elseif ($do[0] == "editforum") { editforum(); }
+
+function editforum() {
+	
+	$adtoken = admintoken();
+	$link = opendb();
+	
+	if (isset($_POST['delete'])) {
+		$id = protect($_POST['id']);
+		doquery($link, "delete from {{table}} where id=$id","forum");
+		admindisplay("Forum thread deleted, you may return to editing the <a href=admin.php?do=editforum>Forum</a>","Thread Deleted");
+	}
+	if (isset($_POST['sticky'])) {
+		$id = protect($_POST['id']);
+		doquery($link,"update {{table}} set sticky='1' where id=$id","forum");
+		admindisplay("Forum thread stickied, you may return to editing the <a href=admin.php?do=editforum>Forum</a>","Thread Stickied");
+	}
+	if (isset($_POST['unsticky'])) {
+		$id = protect($_POST['id']);
+		doquery($link,"update {{table}} set sticky='0' where id=$id","forum");
+		admindisplay("Forum thread unstickied, you may return to editing the <a href=admin.php?do=editforum>Forum</a>","Thread Unstickied");
+	}
+	if (isset($_POST['lock'])) {
+		$id = protect($_POST['id']);
+		doquery($link,"update {{table}} set locked='1' where id=$id","forum");
+		admindisplay("Forum thread locked, you may return to editing the <a href=admin.php?do=editforum>Forum</a>","Thread Locked");
+	}
+	if (isset($_POST['unlock'])) {
+		$id = protect($_POST['id']);
+		doquery($link,"update {{table}} set locked='0' where id=$id","forum");
+		admindisplay("Forum thread unlocked, you may return to editing the <a href=admin.php?do=editforum>Forum</a>","Thread Unlocked");
+	}
+	if (isset($_POST['deletereply'])) {
+		$id = protect($_POST['id']);
+		doquery($link,"update {{table}} set replies=replies-1 where id=$id","forum");
+		admindisplay("Forum reply deleted, you may return to editing the <a href=admin.php?do=editforum>Forum</a>","Reply Deleted");
+	}
+	if (isset($_POST['addreply'])) {
+		$id = protect($_POST['id']);
+		doquery($link,"update {{table}} set replies=replies+1 where id=$id","forum");
+		admindisplay("Forum thread added, you may return to editing the <a href=admin.php?do=editforum>Forum</a>","Thread Added");
+	}
+	$page = "<b><u>Edit forum posts</b></u><br /><br /><br />Click the Delete button to delete a post.<br /><br />";
+	$page .= "<b><u>KEY</b></u><br /><br /><p><u>lock:</u>      0 = unlocked &nbsp&nbsp&nbsp&nbsp 1 = locked   </p><p> <u>stickied:</u>      0 = unstickied &nbsp&nbsp&nbsp&nbsp 1 = stickied  </p><br />   ";
+	$forumquery = doquery($link, "SELECT * FROM {{table}} ORDER BY id DESC LIMIT 100", "forum");
+	while ($forumrow = mysqli_fetch_array($forumquery)) {
+		if ($bg = 1) { $page .= "<div style=\"width:98%; background-color:#eeeeee; font-family: tahoma; font-size: 8pt; line-height: 1.4em; color: #0A3549;\"><form action=\"admin.php?do=editforum\" method=\"post\"><p><input type=\"submit\" value=\"Delete\" name=\"delete\"><input type=\"submit\" value=\"sticky\" name=\"sticky\"><input type=\"submit\" value=\"unsticky\" name=\"unsticky\"> <input type=\"submit\" value=\"lock\" name=\"lock\"><input type=\"submit\" value=\"unlock\" name=\"unlock\"><input type=\"submit\" value=\"delete a reply\" name=\"deletereply\"><input type=\"submit\" value=\"add a reply\" name=\"addreply\">  <input type=\"hidden\" name=\"id\" value=\"".$forumrow["id"]."\"></form></p><p><b>".$forumrow["author"].":</b> ".$forumrow["content"]."</p><p> locked:".$forumrow["locked"]."   stickied:".$forumrow["sticky"]."  parent:".$forumrow["parent"]."  replies:".$forumrow["replies"]."</p><p>Title:".$forumrow["title"]."</p></div>\n"; $bg = 2; }
+		else { $page .= "<div style=\"width:98%; background-color:#ffffff; font-family: tahoma; font-size: 8pt; line-height: 1.4em; color: #0A3549;\"><form action=\"admin.php?do=editforum\" method=\"post\"><p><input type=\"submit\" value=\"Delete\" name=\"delete\"> <input type=\"submit\" value=\"sticky\" name=\"sticky\"><input type=\"submit\" value=\"unsticky\" name=\"unsticky\"> <input type=\"submit\" value=\"lock\" name=\"lock\"><input type=\"submit\" value=\"unlock\" name=\"unlock\"><input type=\"submit\" value=\"delete a reply\" name=\"deletereply\"><input type=\"submit\" value=\"add a reply\" name=\"addreply\"> <input type=\"hidden\" name=\"id\" value=\"".$forumrow["id"]."\"></form></p><p><b>".$forumrow["author"].":</b> ".stripslashes($forumrow["content"])."</p><p> locked:".$forumrow["locked"]."   stickied:".$forumrow["sticky"]."  parent:".$forumrow["parent"]."  replies:".$forumrow["replies"]."</p><p>Title:".$forumrow["title"]."</p></div>\n"; $bg = 1; } 
+	}
+	admindisplay($page, "Edit forum");
+}
+
+step3:
+in templates/admin.php   add:
+
+<a href="admin.php?do=editforum">Edit Forum Posts</a><br />
+
+step 4:
+
+add these into the database forums table:
+
+`sticky` tinyint(1) NOT NULL default '0',
+`locked` tinyint(1) NOT NULL default '0',
+`views` mediumint(5) NOT NULL default '0',
+`level` mediumint(5) NOT NULL default '0',
