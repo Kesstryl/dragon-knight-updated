@@ -1,4 +1,5 @@
-<?php 
+<?php
+libxml_disable_entity_loader( true );
 include('lib.php');
 $check = protectcsfr();
 $link = opendb();

@@ -92,7 +92,7 @@ function reply() {
 	$token = protect($_POST['token']);
 		
 	if ($_SESSION['token'] != $token) { die("Invalid request");}
-	$query = doquery($link, "INSERT INTO {{table}} SET id='',postdate=NOW(),newpostdate=NOW(),author='".$userrow["charname"]."',parent='$parent',replies='0',title='$title',content='$content'", "forum");
+	$query = doquery($link, "INSERT INTO {{table}} SET postdate=NOW(),newpostdate=NOW(),author='".$userrow["charname"]."',parent='$parent',replies='0',title='$title',content='$content'", "forum");
 	$query2 = doquery($link, "UPDATE {{table}} SET newpostdate=NOW(),replies=replies+1 WHERE id='$parent' LIMIT 1", "forum");
 	unset($_SESSION['token']);
 	header("Location: forum.php?do=thread:$parent:0");
@@ -111,7 +111,7 @@ function newthread() {
 		$token = protect($_POST['token']);
 		
 		if ($_SESSION['token'] != $token) { die("Invalid request");}
-        $query = doquery($link, "INSERT INTO {{table}} SET id='',postdate=NOW(),newpostdate=NOW(),author='".$userrow["charname"]."',parent='0',replies='0',title='$title',content='$content'", "forum");
+        $query = doquery($link, "INSERT INTO {{table}} SET postdate=NOW(),newpostdate=NOW(),author='".$userrow["charname"]."',parent='0',replies='0',title='$title',content='$content'", "forum");
         unset($_SESSION['token']);
 		header("Location: forum.php");
         die();

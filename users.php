@@ -80,7 +80,7 @@ function register() { // Register a new account.
                 $verifycode='1';
             }
             
-            $query = doquery($link, "INSERT INTO {{table}} SET id='',regdate=NOW(),verify='$verifycode',username='$username',password='$password',email='$email1',charname='$charname',charclass='$charclass',difficulty='$difficulty'", "users") or die(mysql_error());
+            $query = doquery($link, "INSERT INTO {{table}} SET regdate=NOW(),verify='$verifycode',username='$username',password='$password',email='$email1',charname='$charname',charclass='$charclass',difficulty='$difficulty'", "users") or die(mysql_error());
             unset($_SESSION['token']);
             if ($controlrow["verifyemail"] == 1) {
                 if (sendregmail($email1, $verifycode) == true) {
