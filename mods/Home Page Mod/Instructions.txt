@@ -7,14 +7,14 @@ This is also great for SEO and helps game owners have meaningful content
 for when they apply for a google adsense account for their game.
 The mod uses DK's own templating system so all html changes can be done from 
 the template folder home.php without messing with php code.  Fix it up, make it snazzy, 
-it's there for you to make your game look more inviting to new players!
+add your own screenshots, it's there for you to make your game look more inviting to new players!
 
 
 ***Step 1
 Go to phpmyadmin in your WAMP or host server.
 In the dk_control table, click on the sql tab and insert this into the text field, then click "go":
 
-ALTER TABLE `dk_control` ADD `description` text NOT NULL default '';
+ALTER TABLE `dk_control` ADD `description` text NOT NULL,
 
 
 ***Step 2
@@ -74,7 +74,7 @@ and add this right after:
 
 
 ***Step 4
-make sure the home.php code is in your game directory along with the template home.php and images screenshots folder
+make sure the home.php code is in your game directory and images screenshots folder
 and you should now have a homepage for your game.
 
 Non registered users will see the homepage first to find out more about your game, and then they can registered
