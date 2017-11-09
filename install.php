@@ -185,8 +185,8 @@ unset($query);
 $query = <<<END
 CREATE TABLE IF NOT EXISTS `$forum` (
   `id` int(11) NOT NULL auto_increment,
-  `postdate` datetime NOT NULL default '0000-00-00 00:00:00',
-  `newpostdate` datetime NOT NULL default '0000-00-00 00:00:00',
+  `postdate` datetime NOT NULL default '1970-01-01 00:00:01',
+  `newpostdate` datetime NOT NULL default '1970-01-01 00:00:01',
   `author` varchar(30) NOT NULL default '',
   `parent` int(11) NOT NULL default '0',
   `replies` int(11) NOT NULL default '0',
@@ -567,7 +567,7 @@ unset($query);
 $query = <<<END
 CREATE TABLE IF NOT EXISTS `$news` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
-  `postdate` datetime NOT NULL default '0000-00-00 00:00:00',
+  `postdate` datetime NOT NULL default '1970-01-01 00:00:01',
   `content` text NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB;
@@ -660,8 +660,8 @@ CREATE TABLE IF NOT EXISTS `$users` (
   `verify` varchar(8) NOT NULL default '0',
   `random` VARCHAR(64) NOT NULL default '',
   `charname` varchar(30) NOT NULL default '',
-  `regdate` datetime NOT NULL default '0000-00-00 00:00:00',
-  `onlinetime` datetime NOT NULL default '0000-00-00 00:00:00',
+  `regdate` datetime NOT NULL default '1970-01-01 00:00:01',
+  `onlinetime` datetime NOT NULL default '1970-01-01 00:00:01',
   `authlevel` tinyint(3) unsigned NOT NULL default '0',
   `latitude` smallint(6) NOT NULL default '0',
   `longitude` smallint(6) NOT NULL default '0',
