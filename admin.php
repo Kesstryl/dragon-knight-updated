@@ -6,7 +6,10 @@ $check = protectcsfr();
 $link = opendb();
 $userrow = checkcookies();
 if ($userrow == false) { header("Location: index.php");}
-if ($userrow["authlevel"] != 1) { header("Location: index.php")or die(); } 
+$checkyou = doquery($link, "SELECT random FROM {{table}} WHERE authlevel = 1 LIMIT 1","account");
+$checkrow = mysqli_fetch_array($checkyou);
+$checkadmin = $checkrow["random"];
+	if ($acctrow["authlevel"] !== "1" && $_SESSION['me'] !== sha1($checkadmin)) { header("Location: index.php")or die(); } 
 $controlquery = doquery($link, "SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
 $controlrow = mysqli_fetch_array($controlquery);
 
