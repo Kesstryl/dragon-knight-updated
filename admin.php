@@ -6,10 +6,10 @@ $check = protectcsfr();
 $link = opendb();
 $userrow = checkcookies();
 if ($userrow == false) { header("Location: index.php");}
-$checkyou = doquery($link, "SELECT random FROM {{table}} WHERE authlevel = 1 LIMIT 1","account");
+$checkyou = doquery($link, "SELECT random FROM {{table}} WHERE authlevel = 1 LIMIT 1","users");
 $checkrow = mysqli_fetch_array($checkyou);
 $checkadmin = $checkrow["random"];
-	if ($acctrow["authlevel"] !== "1" && $_SESSION['me'] !== sha1($checkadmin)) { header("Location: index.php")or die(); } 
+	if ($userrow["authlevel"] !== "1" && $_SESSION['me'] !== sha1($checkadmin)) { header("Location: index.php")or die(); } 
 $controlquery = doquery($link, "SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
 $controlrow = mysqli_fetch_array($controlquery);
 
@@ -1029,7 +1029,7 @@ function addnews() {
         if ($content == "") { $errors++; $errorlist .= "Content is required.<br />"; }
         
         if ($errors == 0) { 
-            $query = doquery($link, "INSERT INTO {{table}} SET id='',postdate=NOW(),content='$content'", "news");
+            $query = doquery($link, "INSERT INTO {{table}} SET postdate=NOW(),content='$content'", "news");
             unset($_SESSION['token']);
 			admindisplay("News post added.","Add News");
         } else {

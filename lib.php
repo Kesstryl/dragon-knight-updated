@@ -94,7 +94,7 @@ function protectcsfr() {
 		extract($dbsettings, EXTR_SKIP);
 		$safe = $safeserver;
 		$host = @parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
-		if ($safe != $host && isset($_SERVER['HTTP_REFERER'])) die("invalid url");
+		if ($safe != $host && isset($_SERVER['HTTP_REFERER'])) die("invalid url. Try <a href=login.php?do=login>logging in</a> again");
 }
 
 function admintoken() {
