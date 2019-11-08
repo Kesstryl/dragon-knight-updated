@@ -273,7 +273,7 @@ function babblebox() {
 		
 		if ($_SESSION['token'] != $token) { die("Invalid request");}
         if ($safecontent == "" || $safecontent == " ") { //blank post. do nothing.
-        } else { $insert = doquery($link, "INSERT INTO {{table}} SET id='',posttime=NOW(),author='".$userrow["charname"]."',babble='$safecontent'", "babble"); }
+        } else { $insert = doquery($link, "INSERT INTO {{table}} SET posttime=NOW(),author='".$userrow["charname"]."',babble='$safecontent'", "babble"); }
         unset($_SESSION['token']);
 		header("Location: index.php?do=babblebox");
         die();
