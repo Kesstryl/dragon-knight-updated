@@ -1,6 +1,9 @@
 Dragon Knight
 Changelog
 
+Minor Security fix(11.8.2019) by Kesstryl
+Added utf8 charset to doquery function in libs.php to prevent rare hacks through mysqli_real_escape_string.
+
 Minor Fixes (10.27.2019) by Kesstryl
 Fixed an error preventing access on the Admin page.
 Tweaked several spots in code to make PHP 7+ compliant
