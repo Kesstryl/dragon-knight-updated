@@ -67,6 +67,7 @@ function doquery($link, $query, $table) { // Something of a tiny little database
 	$link = opendb();
     $sqlquery = mysqli_query($link, str_replace("{{table}}", $dbsettings["prefix"] . "_" . $table, $query)) or die("error accessing the database.");
 	$numqueries++;
+	mysqli_set_charset($link,"utf8");
     return $sqlquery;
 
 }
