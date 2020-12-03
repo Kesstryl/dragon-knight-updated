@@ -1,7 +1,7 @@
 # Dragon Knight Updated
 This fork has been updated to be php 7 friendly with mysqli and a few layers of extra security.  The changes are intented to make the engine useable for modern web hosts.  All changes are in the changelog.txt document.  Security updates are only minimal, add your own, or use at your own risk.  Google web application security to learn about the current best security practices, and update your game where new security measures are better than the ones used here.  Web security is always evolving and changing as new threats are discovered.
 
-Some of the mods from the old DK forum are being updated to use with Dragon Knight Updated and added into a folder called "mods" (work in progress).  This folder should not be included in a production environment.  It is there for you to pick mods you would like for your game, and to follow the install instructions.  I did not directly mod them into the base game because not everyone will want the same mods for their own version.  ~ Kesstryl
+Some of the mods, but not all, from the old DK forum were updated to use with Dragon Knight Updated and added into a folder called "mods".  This folder should not be included in a production environment.  It is there for you to pick mods you would like for your game, and to follow the install instructions.  I did not directly mod them into the base game because not everyone will want the same mods for their own version.  ~ Kesstryl
 
 # Dragon Knight
 - See also: [Dragon Scourge](https://github.com/renderse7en/dragon-scourge)
