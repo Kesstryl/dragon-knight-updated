@@ -1,13 +1,6 @@
 Dragon Knight
 Changelog
 
-Minor Security fix(11.8.2019) by Kesstryl
-Added utf8 charset to doquery function in libs.php to prevent rare hacks through mysqli_real_escape_string.
-
-Minor Fixes (10.27.2019) by Kesstryl
-Fixed an error preventing access on the Admin page.
-Tweaked several spots in code to make PHP 7+ compliant
-These minor changes do not warrant a new version.
 
 Dragon Knight 1.1.12  (06.29.2017) by Kesstryl
 All changes to vanilla code were done to increase security and make code php5 compatible.
@@ -39,6 +32,7 @@ Security changes
 Additional changes
 - added the top ten mod created by renderse7en from the DK mods forums because he created this engine and also wrote the mod.
 - added an extra folder with mods and instructions for installing the mods.  Included mods have been updated to mysqli with security added, and tested to work with 1.1.12
+- added security headers to lib.php 
 
 ### 1.1.11 (3.26.2006) ###
 ### Thanks to r0xes & Adam. :)
