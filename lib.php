@@ -1,5 +1,14 @@
 <?php // lib.php :: Common functions used throughout the program.
+header("X-XSS-Protection: 1; mode=block");
+header("X-Frame-Options: SAMEORIGIN");
+header("X-Content-Type-Options: nosniff");
+header("Strict-Transport-Security: max-age=31536000; includeSubDomains");
+header("Referrer-Policy: strict-origin-when-cross-origin");
+header("Permissions-Policy: geolocation=(), camera()");
 ini_set("session.cookie_httponly", 1);
+ini_set('session.use_trans_sid', FALSE);
+ini_set('session.gc_maxlifetime', 86400);
+session_set_cookie_params(86400);
 session_start();
 
 $starttime = getmicrotime();
@@ -67,7 +76,6 @@ function doquery($link, $query, $table) { // Something of a tiny little database
 	$link = opendb();
     $sqlquery = mysqli_query($link, str_replace("{{table}}", $dbsettings["prefix"] . "_" . $table, $query)) or die("error accessing the database.");
 	$numqueries++;
-	mysqli_set_charset($link,"utf8");
     return $sqlquery;
 
 }
@@ -95,7 +103,7 @@ function protectcsfr() {
 		extract($dbsettings, EXTR_SKIP);
 		$safe = $safeserver;
 		$host = @parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
-		if ($safe != $host && isset($_SERVER['HTTP_REFERER'])) die("invalid url. Try <a href=login.php?do=login>logging in</a> again");
+		if ($safe != $host && isset($_SERVER['HTTP_REFERER'])) die("Invalid URL, try <a href=login.php?do=login>logging in</a> again.");
 }
 
 function admintoken() {

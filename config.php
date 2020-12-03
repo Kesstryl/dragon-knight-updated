@@ -6,7 +6,7 @@ $dbsettings = Array(
         "pass"          => "",              // MySQL password.
         "name"          => "dragonknight",              // MySQL database name.
         "prefix"        => "dk",            // Prefix for table names. (Default: dk)
-		"safeserver"	=> "www.localhost",   //use url your actual server is on such as www.yoursitename.com, leave off http:// if using a localhost, some localhosts might use just "localhost" or "www.localhost"
+		"safeserver"	=> "localhost",   //use url your actual server is on such as www.yoursitename.com, leave off http:// if using a localhost, some localhosts might use just "localhost" or "www.localhost"
 );
 
 ?>
