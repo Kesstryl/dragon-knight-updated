@@ -13,7 +13,7 @@ session_start();
 
 $starttime = getmicrotime();
 $numqueries = 0;
-$version = "1.1.12";
+$version = "1.1.12 by Kesstryl";
 $build = "";
 
 // Handling for servers with magic_quotes turned on.
