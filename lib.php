@@ -16,49 +16,30 @@ $numqueries = 0;
 $version = "1.1.12 by Kesstryl";
 $build = "";
 
-// Handling for servers with magic_quotes turned on.
-// Example from php.net.
-if (get_magic_quotes_gpc()) {
+//sanitize all input
+$_COOKIE = array_map('protectarray', $_COOKIE);
+$_GET = array_map('protectarray', $_GET);
+$_POST = array_map('protectarray', $_POST);
 
-   $_POST = array_map('stripslashes_deep', $_POST);
-   $_GET = array_map('stripslashes_deep', $_GET);
-   $_COOKIE = array_map('stripslashes_deep', $_COOKIE);
-
-}
-$_POST = array_map('addslashes_deep', $_POST);
-$_POST = array_map('html_deep', $_POST);
-$_GET = array_map('addslashes_deep', $_GET);
-$_GET = array_map('html_deep', $_GET);
-$_COOKIE = array_map('addslashes_deep', $_COOKIE);
-$_COOKIE = array_map('html_deep', $_COOKIE);
-
-function stripslashes_deep($value) {
-    
-   $value = is_array($value) ?
-               array_map('stripslashes_deep', $value) :
-               stripslashes($value);
-   return $value;
-   
+function protectarray($array){
+	$link = opendb();
+	$array = strip_tags($array);
+	$array = trim($array);
+	$string = addcslashes($array, '%_');
+	$array = htmlspecialchars($array, ENT_QUOTES, 'UTF-8');
+	$array = htmlentities($array);
+	return mysqli_real_escape_string($link, $array);
 }
 
-function addslashes_deep($value) {
-    
-   $value = is_array($value) ?
-               array_map('addslashes_deep', $value) :
-               addslashes($value);
-   return $value;
-   
+function protect($string) {
+	$link = opendb();
+	$string = strip_tags($string);
+	$string = trim($string);
+	$string = addcslashes($string, '%_');
+	$string = htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
+	$string = htmlentities($string);
+    return mysqli_real_escape_string($link, $string);
 }
-
-function html_deep($value) {
-    
-   $value = is_array($value) ?
-               array_map('html_deep', $value) :
-               htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-   return $value;
-   
-}
-
 
 function opendb() { // Open database connection.
 
@@ -76,26 +57,8 @@ function doquery($link, $query, $table) { // Something of a tiny little database
 	$link = opendb();
     $sqlquery = mysqli_query($link, str_replace("{{table}}", $dbsettings["prefix"] . "_" . $table, $query)) or die("error accessing the database.");
 	$numqueries++;
-    return $sqlquery;
+	return $sqlquery;
 
-}
-
-function protect($string) {
-	$link = opendb();
-	$string = strip_tags($string);
-	$string = trim($string);
-	$string = htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
-	$string = htmlentities($string);
-    return mysqli_real_escape_string($link, $string);
-}
-
-function protectarray($array){
-	$link = opendb();
-	$array = strip_tags($array);
-	$array = trim($array);
-	$array = htmlspecialchars($array, ENT_QUOTES, 'UTF-8');
-	$array = htmlentities($array);
-	return mysqli_real_escape_string($link, $array);
 }
 
 function protectcsfr() {
