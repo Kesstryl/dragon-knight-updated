@@ -655,8 +655,8 @@ $query = <<<END
 CREATE TABLE IF NOT EXISTS `$users` (
   `id` smallint(5) unsigned NOT NULL auto_increment,
   `username` varchar(30) NOT NULL default '',
-  `password` varchar(64) NOT NULL default '',
-  `email` varchar(100) NOT NULL default '',
+  `password` varchar(120) NOT NULL default '',
+  `email` varchar(120) NOT NULL default '',
   `verify` varchar(8) NOT NULL default '0',
   `random` VARCHAR(64) NOT NULL default '',
   `charname` varchar(30) NOT NULL default '',
