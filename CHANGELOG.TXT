@@ -2,7 +2,7 @@ Dragon Knight
 Changelog
 
 
-Dragon Knight 1.1.12  (06.29.2017) by Kesstryl
+Dragon Knight 1.1.12  (06.29.2017) by Kesstryl (updated 2.2.2021)
 All changes to vanilla code were done to increase security and make code php5 compatible.
 Security changes are only bare minimum, add your own to increase security, or use at your own risk.
 php5 code upgrades
@@ -23,16 +23,18 @@ Security changes
 - added a salt to passwords.
 - added a string sanitize function and implemented it wherever there is POST data.
 - added an array sanitize function and implemented it wherever there is GET data.
-- added an array sanitize function and implemented it where POST data is extracted as an array.
-- EXTR_SKIP has been added to the extract global as an extra security measure.
+- added an array sanitize function and implemented it where POST and $_GET data is extracted as an array.
+- EXTR_SKIP has been added to the extract global $_POST as an extra security measure.
 - libxml_disable_entity_loader set to true in the xml variable to prevent xml entity expansion attacks. 
 - added a verification captcha to registration and lost password - code by Greg Smith (xanderman from the old dk forums).
 - added a verification captcha to appear on a second failed login attempt to reduce brute force attacks.
 - added a hidden field in registration to prevent spam registration.
+- added security headers to lib.php
+- removed alphanumeric limitation to passwords, and increased password size to 120 so users can create stronger passwords if they wish. 
 Additional changes
 - added the top ten mod created by renderse7en from the DK mods forums because he created this engine and also wrote the mod.
 - added an extra folder with mods and instructions for installing the mods.  Included mods have been updated to mysqli with security added, and tested to work with 1.1.12
-- added security headers to lib.php 
+
 
 ### 1.1.11 (3.26.2006) ###
 ### Thanks to r0xes & Adam. :)
