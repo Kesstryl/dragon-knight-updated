@@ -59,7 +59,6 @@ function register() { // Register a new account.
         
         // Process password.
         if (trim($password1) == "") { $errors++; $errorlist .= "Password field is required.<br />"; }
-        if (preg_match("/[^A-z0-9_\-]/", $password1)==1) { $errors++; $errorlist .= "Password must be alphanumeric.<br />"; } // Thanks to "Carlos Pires" from php.net!
         if ($password1 != $password2) { $errors++; $errorlist .= "Passwords don't match.<br />"; }
 		if ($birthday != "") { $errors++; $errorlist .= "Spammers are not allowed.<br />"; }
         $salt = $username;
@@ -217,7 +216,6 @@ function changepassword() {
         if (mysqli_num_rows($userquery) != 1) { die("No account with that username."); }
         $userrow = mysqli_fetch_array($userquery);
         if ($userrow["password"] != hash('sha256', $username.$oldpass)) { die("The old password you provided was incorrect."); }
-        if (preg_match("/[^A-z0-9_\-]/", $newpass1)==1) { die("New password must be alphanumeric."); } // Thanks to "Carlos Pires" from php.net!
         if ($newpass1 != $newpass2) { die("New passwords don't match."); }
 		$salt = $userrow["username"];
         $realnewpass = hash('sha256', $salt.$newpass1);
