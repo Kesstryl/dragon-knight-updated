@@ -15,8 +15,8 @@ $template = <<<THEVERYENDOFYOU
 <form action="users.php?do=register" method="post">
 <table width="80%">
 <tr><td width="20%">Username:</td><td><input type="text" name="username" size="30" maxlength="30" /><br />Usernames must be 30 alphanumeric characters or less.<br /><br /><br /></td></tr>
-<tr><td>Password:</td><td><input type="password" name="password1" size="30" maxlength="10" /></td></tr>
-<tr><td>Verify Password:</td><td><input type="password" name="password2" size="30" maxlength="10" /><br />Passwords must be 10 alphanumeric characters or less.<br /><br /><br /></td></tr>
+<tr><td>Password:</td><td><input type="password" name="password1" size="30" maxlength="120" /></td></tr>
+<tr><td>Verify Password:</td><td><input type="password" name="password2" size="30" maxlength="120" /><br />Passwords should be greater than 8 characters.<br /><br /><br /></td></tr>
 <tr><td>Email Address:</td><td><input type="text" name="email1" size="30" maxlength="100" /></td></tr>
 <tr><td>Verify Email:</td><td><input type="text" name="email2" size="30" maxlength="100" />{{verifytext}}<br /><br /><br /></td></tr>
 <tr><td>Character Name:</td><td><input type="text" name="charname" size="30" maxlength="30" /></td></tr>

@@ -13,8 +13,8 @@ $token = $_SESSION['token'];
 $template = <<<THEVERYENDOFYOU
 <form action="login.php?do=login" method="post">
 <table width="75%">
-<tr><td width="30%">Username:</td><td><input type="text" size="30" name="username" /></td></tr>
-<tr><td>Password:</td><td><input type="password" size="30" name="password" /></td></tr>
+<tr><td width="30%">Username:</td><td><input type="text" name="username" size="30" maxlength="30" /></td></tr>
+<tr><td>Password:</td><td><input type="password" name="password" size="30" maxlength="120 /></td></tr>
 <tr><td>Remember me?</td><td><input type="checkbox" name="rememberme" value="yes" /> Yes</td></tr>
 <tr><td colspan="2"><input type="submit" name="submit" value="Log In" /></td></tr>
 <tr><td colspan="2">Checking the "Remember Me" option will store your login information in a cookie so you don't have to enter it next time you get online.<br /><br />Want to play? You gotta <a href="users.php?do=register">register your own character.</a><br /><br />You may also <a href="users.php?do=lostpassword">request a new password</a> if you've lost yours.</td></tr>
