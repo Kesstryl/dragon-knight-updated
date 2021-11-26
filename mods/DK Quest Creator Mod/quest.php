@@ -73,7 +73,30 @@ function quest() { // One big long function that determines the outcome of the q
 			$dropcode = "";
 			$page .= "You can now continue <a href=\"index.php\">exploring</a>."; 
 	  	}
-    	   }
+    } else {
+        $newhp = $userrow["maxhp"];
+        $newmp = $userrow["maxmp"];
+        $newtp = $userrow["maxtp"];
+        $newstrength = $userrow["strength"];
+        $newdexterity = $userrow["dexterity"];
+        $newattack = $userrow["attackpower"];
+        $newdefense = $userrow["defensepower"];
+        $newlevel = $userrow["level"];
+        $newspell = "";    
+		$page = "Congratulations. You have defeated the ".$monsterrow["name"].",<br />
+		and you have completed the following quest:<br /><b>".$questrow["name"]."</b><br /><br />
+		You gain $exp experience. $warnexp <br />You gain $gold gold. $warngold <img class=pet src=images/gold.gif /><br /><br /><br />"; 
+		if ($questrow["drop_id"] != 0)
+		{
+		$dropcode = "dropcode='".$questrow["drop_id"]."',";
+		$page .= "You have earned a Reward for completing this quest!  <img class=pet src=images/drop.gif /> <a href=\"index.php?do=questdrop\">Click here</a> to reveal and equip the item, or you may also move on and continue <a href=\"index.php\">exploring</a>.";
+		$page .= "<script type='text/javascript'>alert('You have a drop!');</script>";
+		} else {
+		$dropcode = "";
+		$page .= "You can now continue <a href=\"index.php\">exploring</a>."; 
+		}
+	  
+	}   
     	   $updatequestquery = doquery($link, "UPDATE {{table}} SET status='1' where quest_id='".$userrow["currentquestid"]."' AND user_id='".$userrow["id"]."' LIMIT 1", "questprogress");
     	   $updatequery = doquery($link, "UPDATE {{table}} SET currentaction='Exploring',level='$newlevel',maxhp='$newhp',maxmp='$newmp',maxtp='$newtp',strength='$newstrength',dexterity='$newdexterity',attackpower='$newattack',defensepower='$newdefense', $newspell currentfight='0',currentmonster='0',currentmonsterhp='0',currentmonstersleep='0',currentmonsterimmune='0',currentuberdamage='0',currentuberdefense='0',$dropcode experience='$newexp',gold='$newgold',currentquestid='0' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
     	   unset($questrow);
@@ -510,7 +533,30 @@ function questvictory() {
 		$dropcode = "";
 		$page .= "You can now continue <a href=\"index.php\">exploring</a>."; 
 	  }
-    }
+   } else {
+        $newhp = $userrow["maxhp"];
+        $newmp = $userrow["maxmp"];
+        $newtp = $userrow["maxtp"];
+        $newstrength = $userrow["strength"];
+        $newdexterity = $userrow["dexterity"];
+        $newattack = $userrow["attackpower"];
+        $newdefense = $userrow["defensepower"];
+        $newlevel = $userrow["level"];
+        $newspell = "";    
+		$page = "Congratulations. You have defeated the ".$monsterrow["name"].",<br />
+		and you have completed the following quest:<br /><b>".$questrow["name"]."</b><br /><br />
+		You gain $exp experience. $warnexp <br />You gain $gold gold. $warngold <img class=pet src=images/gold.gif /><br /><br /><br />"; 
+		if ($questrow["drop_id"] != 0)
+		{
+		$dropcode = "dropcode='".$questrow["drop_id"]."',";
+		$page .= "You have earned a Reward for completing this quest!  <img class=pet src=images/drop.gif /> <a href=\"index.php?do=questdrop\">Click here</a> to reveal and equip the item, or you may also move on and continue <a href=\"index.php\">exploring</a>.";
+		$page .= "<script type='text/javascript'>alert('You have a drop!');</script>";
+		} else {
+		$dropcode = "";
+		$page .= "You can now continue <a href=\"index.php\">exploring</a>."; 
+		}
+	  
+	}
     $updatequestquery = doquery($link, "UPDATE {{table}} SET status='1' where quest_id='".$userrow["currentquestid"]."' AND user_id='".$userrow["id"]."' LIMIT 1", "questprogress");
     $updatequery = doquery($link, "UPDATE {{table}} SET currentaction='Exploring',level='$newlevel',maxhp='$newhp',maxmp='$newmp',maxtp='$newtp',strength='$newstrength',dexterity='$newdexterity',attackpower='$newattack',defensepower='$newdefense', $newspell currentfight='0',currentmonster='0',currentmonsterhp='0',currentmonstersleep='0',currentmonsterimmune='0',currentuberdamage='0',currentuberdefense='0',$dropcode experience='$newexp',gold='$newgold',currentquestid='0' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
     unset($questrow);    
