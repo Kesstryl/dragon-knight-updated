@@ -2,10 +2,10 @@ Dragon Knight
 Changelog
 
 
-Dragon Knight 1.1.12  (06.29.2017) by Kesstryl (updated 2.2.2021)
-All changes to vanilla code were done to increase security and make code php5 compatible.
+Dragon Knight 1.1.12  (06.29.2017) by Kesstryl (updated 11.26.2021)
+All changes to vanilla code were done to increase security and make code php 7 compatible.
 Security changes are only bare minimum, add your own to increase security, or use at your own risk.
-php5 code upgrades
+php 7 code upgrades
 - changed database type from MyIsam to InnoDB in install.php
 - Changed mysql to mysqli for all database commands throughout code.
 - defined variables wherever they were undefined.
@@ -34,7 +34,8 @@ Security changes
 Additional changes
 - added the top ten mod created by renderse7en from the DK mods forums because he created this engine and also wrote the mod.
 - added an extra folder with mods and instructions for installing the mods.  Included mods have been updated to mysqli with security added, and tested to work with 1.1.12
-
+Outstanding Bug Fixed
+- Users leveled all the way to 100 would get reset to zero because an else condition was missing for characters that reached 100.  This has now been added.  All mods have had this fix added where applicable.
 
 ### 1.1.11 (3.26.2006) ###
 ### Thanks to r0xes & Adam. :)

@@ -375,7 +375,7 @@ function victory() {
     if ($userrow["difficulty"] == 3) { $gold = ceil($gold * $controlrow["diff3mod"]); }
     if ($userrow["goldbonus"] != 0) { $gold += ceil(($userrow["goldbonus"]/100)*$exp); }
     if ($userrow["experience"] + $exp < 16777215) { $newexp = $userrow["experience"] + $exp; $warnexp = ""; } else { $newexp = $userrow["experience"]; $exp = 0; $warnexp = "You have maxed out your experience points."; }
-    if ($userrow["gold"] + $gold < 16777215) { $newgold = $userrow["gold"] + $gold; $warngold = ""; } else { $newgold = $userrow["gold"]; $gold = 0; $warngold = "You have maxed out your experience points."; }
+    if ($userrow["gold"] + $gold < 16777215) { $newgold = $userrow["gold"] + $gold; $warngold = ""; } else { $newgold = $userrow["gold"]; $gold = 0; $warngold = "You have maxed out your gold points."; }
     
     $levelquery = doquery($link, "SELECT * FROM {{table}} WHERE id='".($userrow["level"]+1)."' LIMIT 1", "levels");
     if (mysqli_num_rows($levelquery) == 1) { $levelrow = mysqli_fetch_array($levelquery); }
@@ -424,7 +424,30 @@ function victory() {
 
             $title = "Victory!";
         }
-    }
+    } else {
+            $newhp = $userrow["maxhp"];
+            $newmp = $userrow["maxmp"];
+            $newtp = $userrow["maxtp"];
+            $newstrength = $userrow["strength"];
+            $newdexterity = $userrow["dexterity"];
+            $newattack = $userrow["attackpower"];
+            $newdefense = $userrow["defensepower"];
+            $newlevel = $userrow["level"];
+            $newspell = "";
+            $page = "Congratulations. You have defeated the ".$monsterrow["name"].".<br />You gain $exp experience. $warnexp <br />You gain $gold gold. $warngold <br /><br />";
+            
+            if (rand(1,30) == 1) {
+                $dropquery = doquery($link, "SELECT * FROM {{table}} WHERE mlevel <= '".$monsterrow["level"]."' ORDER BY RAND() LIMIT 1", "drops");
+                $droprow = mysqli_fetch_array($dropquery);
+                $dropcode = "dropcode='".$droprow["id"]."',";
+                $page .= "This monster has dropped an item. <a href=\"index.php?do=drop\">Click here</a> to reveal and equip the item, or you may also move on and continue <a href=\"index.php\">exploring</a>.";
+            } else { 
+                $dropcode = "";
+                $page .= "You can now continue <a href=\"index.php\">exploring</a>.";
+            }
+
+            $title = "Victory!";
+       }
 
     $updatequery = doquery($link, "UPDATE {{table}} SET currentaction='Exploring',level='$newlevel',maxhp='$newhp',maxmp='$newmp',maxtp='$newtp',strength='$newstrength',dexterity='$newdexterity',attackpower='$newattack',defensepower='$newdefense', $newspell currentfight='0',currentmonster='0',currentmonsterhp='0',currentmonstersleep='0',currentmonsterimmune='0',currentuberdamage='0',currentuberdefense='0',$dropcode experience='$newexp',gold='$newgold' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
     
