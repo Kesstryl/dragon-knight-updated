@@ -413,7 +413,7 @@ function victoryboss() {
             $newdefense = $userrow["defensepower"] + $levelrow[$userrow["charclass"]."_dexterity"];
             $newlevel = $levelrow["id"];
             
- $updatequery = doquery($link, "UPDATE {{table}} SET skills=skills+5, currenthp=maxhp, currentmp=maxmp, currenttp=maxtp WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+			$updatequery = doquery($link, "UPDATE {{table}} SET currenthp=maxhp, currentmp=maxmp, currenttp=maxtp WHERE id='".$userrow["id"]."' LIMIT 1", "users");
  
             if ($levelrow[$userrow["charclass"]."_spells"] != 0) {
                 $userspells = $userrow["spells"] . ",".$levelrow[$userrow["charclass"]."_spells"];
@@ -448,7 +448,30 @@ function victoryboss() {
 
             $title = "Victory!";
         }
-    }
+    } else {
+            $newhp = $userrow["maxhp"];
+            $newmp = $userrow["maxmp"];
+            $newtp = $userrow["maxtp"];
+            $newstrength = $userrow["strength"];
+            $newdexterity = $userrow["dexterity"];
+            $newattack = $userrow["attackpower"];
+            $newdefense = $userrow["defensepower"];
+            $newlevel = $userrow["level"];
+            $newspell = "";
+            $page = "Congratulations. You have defeated the boss ".$monsterrow["name"]. ".<br />You gain $exp experience. $warnexp <br />You gain $gold gold. $warngold <br /><br />";
+            
+            if (rand(1,35) == 1) {
+                $dropquery = doquery($link, "SELECT * FROM {{table}} WHERE mlevel <= '".$monsterrow["level"]."' ORDER BY RAND() LIMIT 1", "drops");
+                $droprow = mysqli_fetch_array($dropquery);
+                $dropcode = "dropcode='".$droprow["id"]."',";
+                $page .= "This boss has dropped an item. <a href=\"index.php?do=drop\">Click here</a> to reveal and equip the item, or you may also move on and continue <a href=\"index.php\">exploring</a>.";
+            } else { 
+                $dropcode = "";
+                $page .= "You can now continue <a href=\"index.php\">exploring</a>.";
+            }
+
+            $title = "Victory!";
+        }
 
     $updatequery = doquery($link, "UPDATE {{table}} SET currentaction='Exploring',level='$newlevel',maxhp='$newhp',maxmp='$newmp',maxtp='$newtp',strength='$newstrength',dexterity='$newdexterity',attackpower='$newattack',defensepower='$newdefense', $newspell currentfight='0',currentmonster='0',currentmonsterhp='0',currentmonstersleep='0',currentmonsterimmune='0',currentuberdamage='0',currentuberdefense='0',$dropcode experience='$newexp',gold='$newgold' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
     
