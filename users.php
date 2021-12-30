@@ -61,8 +61,8 @@ function register() { // Register a new account.
         if (trim($password1) == "") { $errors++; $errorlist .= "Password field is required.<br />"; }
         if ($password1 != $password2) { $errors++; $errorlist .= "Passwords don't match.<br />"; }
 		if ($birthday != "") { $errors++; $errorlist .= "Spammers are not allowed.<br />"; }
-        $salt = $username;
-		$password = hash('sha256', $salt.$password1);
+
+		$password = password_hash($password1, PASSWORD_DEFAULT);
 		
 		// Process image verification.
         $number = $_POST['imagever'];
@@ -156,8 +156,8 @@ function lostpassword() {
         $check = protectcsfr();
 		$username = protect($_POST['username']);
 		$email = protect($_POST['email']);
-        $password1 = protect($_POST['password1']);
-		$password2 = protect($_POST['password2']);
+//      $password1 = protect($_POST['password1']);
+//		$password2 = protect($_POST['password2']);
 		$token = protect($_POST['token']);
 		if ($_SESSION['token'] != $token) { die("Invalid request");}
 		// Process image verification.
@@ -169,8 +169,8 @@ function lostpassword() {
         for ($i=0; $i<8; $i++) {
             $newpass .= chr(rand(65,90));
         }
-		$salt = $username;
-        $md5newpass = hash('sha256', $salt.$newpass);
+
+        $md5newpass = password_hash($newpass, PASSWORD_DEFAULT);
         $updatequery = doquery($link, "UPDATE {{table}} SET password='$md5newpass' WHERE email='$email' LIMIT 1","users");
         unset($_SESSION['token']);
 		$email = <<<END
@@ -215,10 +215,10 @@ function changepassword() {
         $userquery = doquery($link, "SELECT * FROM {{table}} WHERE username='$username' LIMIT 1","users");
         if (mysqli_num_rows($userquery) != 1) { die("No account with that username."); }
         $userrow = mysqli_fetch_array($userquery);
-        if ($userrow["password"] != hash('sha256', $username.$oldpass)) { die("The old password you provided was incorrect."); }
+        if ($userrow["password"] != password_verify($oldpass, PASSWORD_DEFAULT);) { die("The old password you provided was incorrect."); }
         if ($newpass1 != $newpass2) { die("New passwords don't match."); }
-		$salt = $userrow["username"];
-        $realnewpass = hash('sha256', $salt.$newpass1);
+
+        $realnewpass = password_hash($newpass1, PASSWORD_DEFAULT);
         $updatequery = doquery($link, "UPDATE {{table}} SET password='$realnewpass' WHERE username='$username' LIMIT 1","users");
         if (isset($_COOKIE["dkgame"])) { setcookie("dkgame", "", time()-100000, "/", "", 0, true); }
         display("Your password was changed successfully.<br /><br />You have been logged out of the game to avoid cookie errors.<br /><br />Please <a href=\"login.php?do=login\">log back in</a> to continue playing.","Change Password",false,false,false);
@@ -231,7 +231,7 @@ function changepassword() {
     
 }
 
-function sendpassemail($emailaddress, $password) {
+function sendpassemail($emailaddress, $password) { //does this even do anything?
     
 	$check = protectcsfr();
     $controlquery = doquery($link, "SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");

@@ -1,4 +1,5 @@
 <?php // login.php :: Handles logins and cookies.
+
 include('lib.php');
 
 if (isset($_GET["do"])) {
@@ -16,33 +17,35 @@ function login() {
 		$check = protectcsfr();
 		$link = opendb();
         $username = protect($_POST['username']);
-        $pass = protect($_POST['password']);
+        $password = protect($_POST['password']);
 		$token = protect($_POST['token']);
 		if ($_SESSION['token'] != $token) { die("Invalid request, try <a href=login.php?do=login>logging in</a> again.");}
-		if($_SESSION['loginCount']>=1){
+		if($_SESSION['loginCount']>=2){
 			header("Location: login.php?do=nobrute");
 			die();}
-		$salt = $username;
-		$password = hash('sha256', $salt.$pass);
-        $query = doquery($link, "SELECT * FROM {{table}} WHERE username='$username' AND password='$password' LIMIT 1", "users") or die(mysqli_error($link));
+        $query = doquery($link, "SELECT * FROM {{table}} WHERE username='$username' LIMIT 1", "users") or die(mysqli_error($link));
         if (mysqli_num_rows($query) != 1) { 
-            $_SESSION['loginCount'] = $_SESSION['loginCount']+1;
-		die("Invalid username or password. Please <a href=\"login.php?do=login\">go back </a>and try again."); }
+			die("Invalid username. Please <a href=\"login.php?do=login\">go back </a>and try again."); }
         $row = mysqli_fetch_array($query);
-        if (isset($_POST["rememberme"])) { $expiretime = time()+604800; $rememberme = 1; } else { $expiretime = 0; $rememberme = 0; }
-        $random = rand(100, 10000);
-		$itsme = hash('sha256', $random);
-		$query = doquery($link, "UPDATE {{table}} SET `random`='$itsme' WHERE `username`='$username' LIMIT 1", "users") or die(mysqli_error($link));		
-		$hashme = md5($itsme);
-		$cookie = ($row["id"]) . " " .$hashme. " " . $rememberme;
-        setcookie("dkgame", $cookie, $expiretime, "/", "", false, true);
-		unset($_SESSION['token']);
-		unset($_SESSION['loginCount']);
-		session_regenerate_id();
-		$_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
-		$_SESSION['me'] = sha1($itsme);
-        header("Location: index.php");
-        die();
+		if (password_verify($password, $row['password'])) {
+			if (isset($_POST["rememberme"])) { $expiretime = time()+604800; $rememberme = 1; } else { $expiretime = 0; $rememberme = 0; }
+			$random = rand(100, 10000);
+			$itsme = hash('sha256', $random);
+			$query = doquery($link, "UPDATE {{table}} SET `random`='$itsme' WHERE `username`='$username' LIMIT 1", "users") or die(mysqli_error($link));		
+			$hashme = md5($itsme);
+			$cookie = ($row["id"]) . " " .$hashme. " " . $rememberme;
+			setcookie("dkgame", $cookie, $expiretime, "/", "", false, true);
+			unset($_SESSION['token']);
+			unset($_SESSION['loginCount']);
+			session_regenerate_id();
+			$_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
+			$_SESSION['me'] = sha1($itsme);
+			header("Location: index.php");
+			die();
+		}else{
+            $_SESSION['loginCount'] = $_SESSION['loginCount']+1;
+			die("Invalid username or password. Please <a href=\"login.php?do=login\">go back </a>and try again.");
+            }
     }
     $page = gettemplate("login");
     $title = "Log In";
@@ -53,7 +56,7 @@ function nobrute(){
 	if(isset($_POST['verify'])){
         // Process image verification.
 			$number = protect($_POST['imagever']);
-			if (md5($number) != $_SESSION['image_random_value']) { die("Image verification failed.<br />"); }
+			if (md5($number) != $_SESSION['image_random_value']) { die("Image verification failed. Please <a href=\"login.php?do=login\">go back </a>and try again.<br />"); }
 			unset($_SESSION['loginCount']);	
 			header("Location: login.php?do=login");
 			die();
