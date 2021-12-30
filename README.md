@@ -21,7 +21,7 @@ Couple things to keep in mind though:
 - This Git repo represents the final released version, 1.1.11, originally released 3/26/2006.
 
 # System Requirements
-- PHP (4.1 and higher)
+- PHP (5.3 and higher)
 - MySQL
 - zlib compression enabled on your server (optional)
 
