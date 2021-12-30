@@ -2,14 +2,15 @@ Dragon Knight
 Changelog
 
 
-Dragon Knight 1.1.12  (06.29.2017) by Kesstryl (updated 11.26.2021)
+Dragon Knight 1.1.12  (06.29.2017) by Kesstryl (updated 12.29.2021)
 All changes to vanilla code were done to increase security and make code php 7 compatible.
-Security changes are only bare minimum, add your own to increase security, or use at your own risk.
+Security changes are not exaustive, add your own to increase security, or use at your own risk.
 php 7 code upgrades
 - changed database type from MyIsam to InnoDB in install.php
 - Changed mysql to mysqli for all database commands throughout code.
 - defined variables wherever they were undefined.
 Security changes
+- changed password hashing to use the native PHP password_hash function which is based on Bcrypt.
 - changed cookies to use a hash code which is changed at every login.
 - set cookies to http only.
 - changed cookies to last for one week instead of one year to force new cookie tokens and reduce chances of session hijacking.
