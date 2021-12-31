@@ -383,7 +383,7 @@ INSERT INTO `$levels` VALUES (96, 7583788, 5, 3, 5, 4, 3, 0, 8221697, 5, 2, 5, 7
 INSERT INTO `$levels` VALUES (97, 7710548, 5, 4, 5, 4, 5, 0, 8356908, 5, 3, 5, 7, 5, 0, 9312724, 5, 3, 5, 4, 6, 0);
 INSERT INTO `$levels` VALUES (98, 7837308, 4, 5, 5, 4, 3, 0, 8492119, 4, 3, 5, 7, 3, 0, 9461106, 4, 4, 5, 4, 4, 0);
 INSERT INTO `$levels` VALUES (99, 7964068, 50, 5, 5, 6, 5, 0, 8627330, 50, 3, 5, 9, 5, 0, 9609488, 50, 4, 5, 6, 6, 0);
-INSERT INTO `$levels` VALUES (100, 16777215, 0, 0, 0, 0, 0, 0, 16777215, 0, 0, 0, 0, 0, 0, 16777215, 0, 0, 0, 0, 0, 0);
+INSERT INTO `$levels` VALUES (100, 15928136, 0, 0, 0, 0, 0, 0, 15928136, 0, 0, 0, 0, 0, 0, 15928136, 0, 0, 0, 0, 0, 0);
 END;
 if (dobatch($query) == 1) { echo "Levels table populated.<br />"; } else { echo "Error populating Levels table."; }
 unset($query);
@@ -655,7 +655,7 @@ $query = <<<END
 CREATE TABLE IF NOT EXISTS `$users` (
   `id` smallint(5) unsigned NOT NULL auto_increment,
   `username` varchar(30) NOT NULL default '',
-  `password` varchar(120) NOT NULL default '',
+  `password` varchar(255) NOT NULL default '',
   `email` varchar(120) NOT NULL default '',
   `verify` varchar(8) NOT NULL default '0',
   `random` VARCHAR(64) NOT NULL default '',
@@ -683,7 +683,7 @@ CREATE TABLE IF NOT EXISTS `$users` (
   `maxtp` smallint(6) unsigned NOT NULL default '10',
   `level` smallint(5) unsigned NOT NULL default '1',
   `gold` mediumint(8) unsigned NOT NULL default '100',
-  `experience` mediumint(8) unsigned NOT NULL default '0',
+  `experience` int(10) unsigned NOT NULL default '0',
   `goldbonus` smallint(5) NOT NULL default '0',
   `expbonus` smallint(5) NOT NULL default '0',
   `strength` smallint(5) unsigned NOT NULL default '5',
@@ -761,8 +761,8 @@ function fourth() { // Final page: insert new user row, congratulate the person 
     if (!isset($email2)) { die("Verify Email is required."); }
     if ($email1 != $email2) { die("Emails don't match."); }
     if (!isset($charname)) { die("Character Name is required."); }
-    $salt = $username;
-	$password = hash('sha256', $salt.$password1);
+
+	$password = password_hash($password1, PASSWORD_DEFAULT);
     
     global $dbsettings;
 	$link = opendb();
