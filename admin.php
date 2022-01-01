@@ -1029,7 +1029,7 @@ function addnews() {
         if ($content == "") { $errors++; $errorlist .= "Content is required.<br />"; }
         
         if ($errors == 0) { 
-            $query = doquery($link, "INSERT INTO {{table}} SET postdate=NOW(),content='$content'", "news");
+            $query = doquery($link, "INSERT INTO {{table}} SET id='',postdate=NOW(),content='$content'", "news");
             unset($_SESSION['token']);
 			admindisplay("News post added.","Add News");
         } else {
